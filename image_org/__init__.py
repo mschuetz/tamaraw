@@ -10,12 +10,11 @@ app = Flask('image_org')
 app.config['SECRET_KEY'] = 'ohchohyaqu3imiew4oLahgh4oMa3Shae'
 s3_prefix = config['s3']['prefix']
 
-def connect_db():
-    g.db = MySQLdb.connect(**config['database'])
-    g.cursor = g.db.cursor()
-
 @app.before_request
 def before_request():
+    def connect_db():
+        g.db = MySQLdb.connect(**config['database'])
+        g.cursor = g.db.cursor()
     if hasattr(g, 'db'):
         try:
             g.cursor = g.db.cursor()
