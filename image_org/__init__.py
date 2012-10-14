@@ -4,7 +4,7 @@ import boto, MySQLdb, os, json
 with open(os.environ['HOME'] + '/.image_org.conf') as f:
     config = json.load(f)
 
-s3 = boto.connect_s3().get_bucket(config['s3']['bucket'])
+s3 = boto.connect_s3(**config['s3']['credentials']).get_bucket(config['s3']['bucket'])
 
 app = Flask('image_org')
 app.config['SECRET_KEY'] = 'ohchohyaqu3imiew4oLahgh4oMa3Shae'
