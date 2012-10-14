@@ -6,7 +6,7 @@ with open(os.environ['HOME'] + '/.image_org.conf') as f:
 
 s3 = boto.connect_s3().get_bucket(config['s3']['bucket'])
 
-app = Flask('picturedb')
+app = Flask('image_org')
 app.config['SECRET_KEY'] = 'ohchohyaqu3imiew4oLahgh4oMa3Shae'
 s3_prefix = config['s3']['prefix']
 
