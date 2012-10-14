@@ -30,8 +30,12 @@ def teardown_request(exception):
     if hasattr(g, 'cursor'):
         g.cursor.close()
 
-@app.route('/image/<img_id>', )
-def get_image(img_id):
+@app.route('/<img_id>/file')
+def get_image_default(img_id):
+    return get_image(img_id, 'original')
+
+@app.route('/<img_id>/file/<size>')
+def get_image(img_id, size):
     key = s3.get_key(s3_prefix + img_id)
     if key:
         url = key.generate_url(3600)
@@ -39,8 +43,7 @@ def get_image(img_id):
     else:
         abort(404)
 
-
-@app.route('/properties/<s3_key>')
+@app.route('/<s3_key>')
 def get_properties(s3_key):
     def add_rows(cursor, obj):
         for row in g.cursor:
@@ -48,7 +51,7 @@ def get_properties(s3_key):
             obj[key] = value
     
     properties = {}
-        
+    
     g.cursor.execute("""select property_types.name, images_text.value from images
                         join images_text on images.id=images_text.image_id
                         join property_types on property_types.id=images_text.property_type_id
@@ -62,4 +65,4 @@ def get_properties(s3_key):
                         where images.s3_key=%s""", s3_key)
     add_rows(g.cursor, properties)
     
-    return jsonify({s3_key: {'properties': properties}})
+    return jsonify({s3_key: {'href': '/%s/file' % (s3_key), 'properties': properties}})
