@@ -49,19 +49,23 @@ def get_properties(s3_key):
             key, value = row
             obj[key] = value
     
-    properties = {}
     
-    g.cursor.execute("""select property_types.name, images_text.value from images
-                        join images_text on images.id=images_text.image_id
+    if g.cursor.execute('select id, created_at from images where s3_key=%s', s3_key) == 0:
+        abort(404)
+
+    image_id, created_at = g.cursor.fetchone()
+    
+    g.cursor.execute("""select property_types.name, images_text.value from images_text
                         join property_types on property_types.id=images_text.property_type_id
-                        where images.s3_key=%s""", s3_key)
+                        where images_text.image_id=%s""", image_id)
+
+    properties = {}
     add_rows(g.cursor, properties)
 
-    g.cursor.execute("""select property_types.name, enum_values.name from images
-                        join images_enums on images.id=images_enums.image_id
+    g.cursor.execute("""select property_types.name, enum_values.name from images_enums
                         join enum_values on images_enums.enum_value_id=enum_values.id
                         join property_types on property_types.id=enum_values.type_id
-                        where images.s3_key=%s""", s3_key)
+                        where images_enums.image_id=%s""", image_id)
     add_rows(g.cursor, properties)
     
-    return jsonify({s3_key: {'href': '/%s/file' % (s3_key), 'properties': properties}})
+    return jsonify({s3_key: {'created_at': str(created_at), 'href': '/%s/file' % (s3_key), 'properties': properties}})
