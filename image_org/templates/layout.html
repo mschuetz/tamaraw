@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="">
+		<meta name="author" content="">
+		<!-- Le styles -->
+		<link href="assets/css/bootstrap.css" rel="stylesheet">
+		<style>
+			body {
+				padding-top: 60px; /* 60px to make the container go all the way
+				 to the bottom of the topbar */
+			}
+		</style>
+		<link href="{{url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+		<link href="{{url_for('static', filename='vendor/bootstrap/css/bootstrap-responsive.min.css') }}" rel="stylesheet">
+		<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+		<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js">
+		</script>
+		<![endif]-->
+	</head>
+
+	<body>
+		<div class="navbar navbar-fixed-top navbar-inverse">
+			<div class="navbar-inner">
+				<div class="container-fluid">
+					<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"> <span class="icon-bar"> </span> <span class="icon-bar"> </span> <span class="icon-bar"> </span> </a>
+					<a class="brand" href="/site/database"> Image Database </a>
+					<div class="nav-collapse">
+						<ul class="nav">
+							<li>
+								<a href="/"> Home </a>
+							</li>
+							<li>
+								<a href="/site/about"> About </a>
+							</li>
+							<li>
+								<a href="/site/imprint"> Contact </a>
+							</li>
+						</ul>
+					</div>
+					<form class="navbar-form pull-right">
+						<input name="textinput1" placeholder="Email" class="span2" type="email">
+						<input name="textinput2" placeholder="Password" class="span2" type="password">
+						<button class="btn">
+							Sign in
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="container-fluid">
+				<div class="span12">
+					{% block body %}{% endblock %}
+					<hr>
+					<div>
+						© idlecrew 2012
+					</div>
+				</div>
+
+			</div>
+		</div>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js" ></script>
+		<script src="{{url_for('static', filename='vendor/bootstrap/js/bootstrap.min.js') }}"></script>
+		<script src="{{url_for('static', filename='vendor/underscore-min.js') }}"></script>
+		<script src="{{url_for('static', filename='vendor/backbone-min.js') }}"></script>
+	</body>
+
+</html>

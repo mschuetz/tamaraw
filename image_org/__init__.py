@@ -69,3 +69,12 @@ def get_properties(s3_key):
     add_rows(g.cursor, properties)
     
     return jsonify({s3_key: {'created_at': str(created_at), 'href': '/%s/file' % (s3_key), 'properties': properties}})
+
+# the accompanying website
+@app.route('/site/<template>')
+def site(template):
+    return render_template(template + '.html')
+
+@app.route('/')
+def start():
+    return site('start')
