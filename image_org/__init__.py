@@ -7,9 +7,8 @@ from flask.helpers import flash
 with open(os.environ['HOME'] + '/.image_org.conf') as f:
     config = json.load(f)
 
-#s3 = boto.connect_s3(**config['s3']['credentials']).get_bucket(config['s3']['bucket'])
-
-s3 = None
+s3 = boto.connect_s3(**config['s3']['credentials']).get_bucket(config['s3']['bucket'])
+#s3 = None
 
 UPLOAD_FOLDER = '/tmp'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
