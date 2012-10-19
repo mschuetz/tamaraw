@@ -82,21 +82,32 @@ class Image:
         self.created_at = created_at
         self.s3_key = s3_key 
 
+def to_image_list(cursor):
+    images = []
+    more = False
+    for row in cursor:
+        if len(images) == 20:
+            more = True
+            break
+        images.append(Image(row[0], row[1], row[2]))
+    return images, more
+
 # the accompanying website
 @app.route('/site/recent', defaults={'offset': 0})
 @app.route('/site/recent/<int:offset>')
 def recent_images(offset):
     page_size = 20
     g.cursor.execute('select id, created_at, s3_key from images order by created_at desc limit %s,%s', (offset, page_size + 1))
-    images = []
-    more = False
-    for row in g.cursor:
-        if len(images) == 20:
-            more = True
-            break
-        images.append(Image(row[0], row[1], row[2]))
-    
+    images, more = to_image_list(g.cursor)
     return render_template('recent.html', images=images, more=more, page_size=page_size, offset=offset)
+
+@app.route('/site/upload_group/<upload_group>', defaults={'offset': 0})
+@app.route('/site/recent/<upload_group>/<int:offset>')
+def upload_group(upload_group, offset):
+    page_size = 20
+    g.cursor.execute('select id, created_at, s3_key from images where upload_group=%s order by created_at desc limit %s,%s', (upload_group, offset, page_size + 1))
+    images, more = to_image_list(g.cursor)
+    return render_template('upload_group.html', images=images, more=more, page_size=page_size, offset=offset)
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -123,7 +134,7 @@ def upload_file(upload_group):
                     key = s3.new_key(s3_prefix + s3_key)
                     key.set_contents_from_file(file)
                 
-                g.cursor.execute('insert into images (s3_key, upload_group) values (%s)', (s3_key, upload_group))
+                g.cursor.execute('insert into images (s3_key, upload_group) values (%s, %s)', (s3_key, upload_group))
                 g.db.commit()
                 flash('successfully uploaded file', 'alert-success')
             else:
