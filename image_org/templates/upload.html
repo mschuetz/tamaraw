@@ -1,5 +1,11 @@
 {% extends "layout.html" %}
+
 {% block body %}
+<!-- Third party script for BrowserPlus runtime (Google Gears included in Gears runtime now) -->
+<script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
+<!-- Load plupload and all it's runtimes and finally the jQuery queue widget -->
+<script type="text/javascript" src="{{url_for('static', filename='vendor/plupload/plupload.full.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static', filename='vendor/plupload/jquery.plupload.queue/jquery.plupload.queue.js')}}"></script>
 <div class="navbar">
 	<div class="navbar-inner">
 		<!--<a class="brand" href="#">Title</a>-->
@@ -28,16 +34,30 @@
 {% endfor %}
 {% endif %}
 {% endwith %}
+<div id="upload-alert" class="alert hide">
+	<button type="button" class="close" data-dismiss="alert"> × </button>
+	<span id="message"></span>
+</div>
 
 <script type="text/javascript">
 // Convert divs to queue widgets when the DOM is ready
 $(function() {
+	
+	function show_alert(level, message) {
+		$("#upload-alert #message").replaceWith("<span id='message'>" + message + "</span>");
+		var alert = $("#upload-alert");
+		$.each(["alert-success", "alert-error", "alert-info"], function(level_to_remove) {
+			alert.removeClass(level_to_remove);
+		})
+	    alert.addClass("alert-" + level);
+	    alert.show();
+	}
+	
     $("#uploader").pluploadQueue({
         // General settings
         runtimes : 'html5,gears,flash,silverlight,browserplus',
         url : '{{url_for("upload_file", upload_group=upload_group)}}',
         max_file_size : '20mb',
-        chunk_size : '64kb',
         unique_names : false,
         multiple_queues : true,
 
@@ -48,35 +68,22 @@ $(function() {
         filters : [
             {title : "Image files", extensions : "jpg,jpeg,gif,png"},
         ],
+        
+        init: {
+        	UploadComplete: function(uploader, files){
+	        	show_alert("success", "Upload successful. <a href='/site/upload_group/{{upload_group}}'>Edit properties</a>.");
+	        	
+        	},
+        	Error: function(up, args) {
+        		show_alert("error", "Upload unsuccessful. " + args);
+        	}
+        },
  
         // Flash settings
         flash_swf_url : '{{url_for("static", filename="vendor/plupload/plupload.flash.swf")}}',
  
         // Silverlight settings
         silverlight_xap_url : '{{url_for("static", filename="vendor/plupload/plupload.silverlight.xap")}}'
-    }).bind('UploadComplete', function(uploader, files){
-        	alert('wtf44');
-        	console.log("uploaded %s", files);
-        });
- 
-    // Client side form validation
-    alert('wtf1');
-    $('form').submit(function(e) {
-    	alert('wtf2');
-        var uploader = $('#uploader').pluploadQueue();
-        uploader.bind('UploadComplete', function(uploader, files){
-        	alert('wtf4');
-        	console.log("uploaded %s", files);
-        });
- 		alert('wtf4');
-        // Files in queue upload them first
-        if (uploader.files.length > 0) {
-            uploader.start();
-        } else {
-            alert('You must queue at least one file.');
-        }
- 
-        return false;
     });
 });
 </script>
@@ -89,9 +96,4 @@ $(function() {
 	</div>
 </form>
 
-<!-- Third party script for BrowserPlus runtime (Google Gears included in Gears runtime now) -->
-<script type="text/javascript" src="http://bp.yahooapis.com/2.4.21/browserplus-min.js"></script>
-<!-- Load plupload and all it's runtimes and finally the jQuery queue widget -->
-<script type="text/javascript" src="{{url_for('static', filename='vendor/plupload/plupload.full.js')}}"></script>
-<script type="text/javascript" src="{{url_for('static', filename='vendor/plupload/jquery.plupload.queue/jquery.plupload.queue.js')}}"></script>
 {% endblock %}
