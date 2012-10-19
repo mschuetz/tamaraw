@@ -25,7 +25,8 @@ CREATE TABLE images (
   created_at timestamp DEFAULT now(),
   s3_key varchar(255) NOT NULL,
   PRIMARY KEY (id),
-  KEY s3_key (s3_key)
+  KEY s3_key (s3_key),
+  KEY created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS images_enums;

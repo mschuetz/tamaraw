@@ -16,7 +16,17 @@
 		</ul>
 	</div>
 </div>
+<div>
+<ul class="thumbnails">
+	{% for image in images %}
+ 	<li class="span3">
+	<div class="thumbnail">
+		<img src="{{ url_for('get_image', s3_key=image.s3_key) }}"/>
+		<p>uploaded {{ image.created_at }}</p>
+	</div>
+	</li>
+	{% endfor %}
+</ul>
 
-
-
+</div>
 {% endblock %}
