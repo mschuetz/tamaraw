@@ -109,9 +109,9 @@ def mock_upload(file, s3_key):
     with open('/tmp/'+s3_key, 'w') as f:
         f.write(file.read())
     
-@app.route('/site/upload', defaults={'upload_session': None}, methods=['GET'])
-@app.route('/site/upload/<upload_session>', methods=['POST'])
-def upload_file(upload_session):
+@app.route('/site/upload', defaults={'upload_group': None}, methods=['GET'])
+@app.route('/site/upload/<upload_group>', methods=['POST'])
+def upload_file(upload_group):
     if request.method == 'POST':
         try:
             file = request.files['file']
@@ -123,7 +123,7 @@ def upload_file(upload_session):
                     key = s3.new_key(s3_prefix + s3_key)
                     key.set_contents_from_file(file)
                 
-                g.cursor.execute('insert into images (s3_key, upload_session) values (%s)', (s3_key, upload_session))
+                g.cursor.execute('insert into images (s3_key, upload_group) values (%s)', (s3_key, upload_group))
                 g.db.commit()
                 flash('successfully uploaded file', 'alert-success')
             else:
@@ -132,7 +132,7 @@ def upload_file(upload_session):
             app.logger.exception('error during upload')
             flash('encountered an exception during upload ' + str(sys.exc_info()[0]), 'alert-error')
             
-    return render_template('upload.html', upload_session=uuid.uuid4())
+    return render_template('upload.html', upload_group=uuid.uuid4())
 
 @app.route('/site/<template>')
 def site(template):
