@@ -7,7 +7,9 @@ from flask.helpers import flash
 with open(os.environ['HOME'] + '/.image_org.conf') as f:
     config = json.load(f)
 
-s3 = boto.connect_s3(**config['s3']['credentials']).get_bucket(config['s3']['bucket'])
+#s3 = boto.connect_s3(**config['s3']['credentials']).get_bucket(config['s3']['bucket'])
+
+s3 = None
 
 UPLOAD_FOLDER = '/tmp'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -103,17 +105,26 @@ def allowed_file(filename):
 
 import uuid,sys
            
-@app.route('/site/upload', methods=['GET', 'POST'])
-def upload_file():
+
+def mock_upload(file, s3_key):
+    with open('/tmp/'+s3_key, 'w') as f:
+        f.write(file.read())
+    
+@app.route('/site/upload', defaults={'upload_session': None}, methods=['GET'])
+@app.route('/site/upload/<upload_session>', methods=['POST'])
+def upload_file(upload_session):
     if request.method == 'POST':
         try:
             file = request.files['file']
             if file.filename and allowed_file(file.filename):
                 s3_key = str(uuid.uuid4())
-                key = s3.new_key(s3_prefix + s3_key)
-                key.set_contents_from_file(file)
+                if not s3:
+                    mock_upload(file, s3_key);
+                else:
+                    key = s3.new_key(s3_prefix + s3_key)
+                    key.set_contents_from_file(file)
                 
-                g.cursor.execute('insert into images (s3_key) values (%s)', (s3_key))
+                g.cursor.execute('insert into images (s3_key, upload_session) values (%s)', (s3_key, upload_session))
                 g.db.commit()
                 flash('successfully uploaded file', 'alert-success')
             else:
@@ -122,7 +133,7 @@ def upload_file():
             app.logger.exception('error during upload')
             flash('encountered an exception during upload ' + str(sys.exc_info()[0]), 'alert-error')
             
-    return render_template('upload.html')
+    return render_template('upload.html', upload_session=uuid.uuid4())
 
 @app.route('/site/<template>')
 def site(template):

@@ -23,6 +23,7 @@ DROP TABLE IF EXISTS images;
 CREATE TABLE images (
   id int(11) NOT NULL AUTO_INCREMENT,
   created_at timestamp DEFAULT now(),
+  upload_session varchar(255) NOT NULL,
   s3_key varchar(255) NOT NULL,
   PRIMARY KEY (id),
   KEY s3_key (s3_key),
