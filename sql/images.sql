@@ -24,9 +24,9 @@ CREATE TABLE images (
   id int(11) NOT NULL AUTO_INCREMENT,
   created_at timestamp DEFAULT now(),
   upload_group varchar(255) NOT NULL,
-  s3_key varchar(255) NOT NULL,
+  store_key varchar(255) NOT NULL,
   PRIMARY KEY (id),
-  KEY s3_key (s3_key),
+  KEY store_key (store_key),
   KEY upload_group (upload_group),
   KEY created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -62,7 +62,7 @@ CREATE TABLE property_types (
 -- some defaults
 insert into property_types (name, property_type) values ('description', 'text'), ('photographer', 'text'), ('artifact_type', 'enum');
 insert into enum_values (type_id, name) values (3, 'coin'), (3, 'jewellery');
-insert into images (s3_key) values('001.jpg');
+insert into images (store_key) values('001.jpg');
 insert into images_text (image_id, property_type_id, value) values (1, 1, 'Before the old man could answer, the boy recollected and triumphantly shoved his hand into a pouch under his bear-skin and pulled forth a battered and tarnished silver dollar.');
 insert into images_enums (image_id, enum_value_id) values (1, 1);
 

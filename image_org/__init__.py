@@ -3,12 +3,13 @@ import boto, MySQLdb, os, json
 from collections import namedtuple
 from werkzeug.utils import secure_filename
 from flask.helpers import flash
+from image_org.store import S3Store, LocalStore
 
 with open(os.environ['HOME'] + '/.image_org.conf') as f:
     config = json.load(f)
 
-s3 = boto.connect_s3(**config['s3']['credentials']).get_bucket(config['s3']['bucket'])
-#s3 = None
+#store = S3Store(**config['s3']['credentials']), config['s3']['bucket'], 'images_')
+store = LocalStore('/tmp')
 
 UPLOAD_FOLDER = '/tmp'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -16,7 +17,6 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 app = Flask('image_org')
 app.config['SECRET_KEY'] = 'ohchohyaqu3imiew4oLahgh4oMa3Shae'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-s3_prefix = config['s3']['prefix']
 
 @app.before_request
 def before_request():
@@ -37,24 +37,24 @@ def teardown_request(exception):
     if hasattr(g, 'cursor'):
         g.cursor.close()
 
-@app.route('/images/<s3_key>/file', defaults = {'size': 'original'})
-@app.route('/images/<s3_key>/file/<size>')
-def get_image(s3_key, size):
-    key = s3.get_key(s3_prefix + s3_key)
-    if key:
-        url = key.generate_url(3600)
-        return redirect(url, 307)
-    else:
-        abort(404)
+@app.route('/images/<store_key>/file')
+def get_image(store_key):
+    try:
+        x = int(request.args.get('x'))
+        y = int(request.args.get('y'))
+        return store.deliver_image(store_key, (x, y))
+    except: # Exception, e:
+        #print >>sys.stderr, 'get_image: ex = %s' % e
+        return store.deliver_image(store_key)
 
-@app.route('/images/<s3_key>')
-def get_properties(s3_key):
+@app.route('/images/<store_key>')
+def get_properties(store_key):
     def add_rows(cursor, obj):
         for row in g.cursor:
             key, value = row
             obj[key] = value
     
-    if g.cursor.execute('select id, created_at from images where s3_key=%s', s3_key) == 0:
+    if g.cursor.execute('select id, created_at from images where store_key=%s', store_key) == 0:
         abort(404)
 
     image_id, created_at = g.cursor.fetchone()
@@ -72,15 +72,15 @@ def get_properties(s3_key):
                         where images_enums.image_id=%s""", image_id)
     add_rows(g.cursor, properties)
     
-    return jsonify({s3_key: {'created_at': str(created_at), 'href': '/%s/file' % (s3_key), 'properties': properties}})
+    return jsonify({store_key: {'created_at': str(created_at), 'href': '/%s/file' % (store_key), 'properties': properties}})
 
-#Image = namedtuple('id', 'created_at', 's3_key')
+#Image = namedtuple('id', 'created_at', 'store_key')
 
 class Image:
-    def __init__(self, db_id, created_at, s3_key):
+    def __init__(self, db_id, created_at, store_key):
         self.db_id = db_id
         self.created_at = created_at
-        self.s3_key = s3_key 
+        self.store_key = store_key 
 
 def to_image_list(cursor):
     images = []
@@ -97,7 +97,7 @@ def to_image_list(cursor):
 @app.route('/site/recent/<int:offset>')
 def recent_images(offset):
     page_size = 20
-    g.cursor.execute('select id, created_at, s3_key from images order by created_at desc limit %s,%s', (offset, page_size + 1))
+    g.cursor.execute('select id, created_at, store_key from images order by created_at desc limit %s,%s', (offset, page_size + 1))
     images, more = to_image_list(g.cursor)
     return render_template('recent.html', images=images, more=more, page_size=page_size, offset=offset)
 
@@ -105,7 +105,7 @@ def recent_images(offset):
 @app.route('/site/recent/<upload_group>/<int:offset>')
 def upload_group(upload_group, offset):
     page_size = 20
-    g.cursor.execute('select id, created_at, s3_key from images where upload_group=%s order by created_at desc limit %s,%s', (upload_group, offset, page_size + 1))
+    g.cursor.execute('select id, created_at, store_key from images where upload_group=%s order by created_at desc limit %s,%s', (upload_group, offset, page_size + 1))
     images, more = to_image_list(g.cursor)
     return render_template('upload_group.html', images=images, more=more, page_size=page_size, offset=offset)
 
@@ -114,12 +114,7 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 import uuid,sys
-           
 
-def mock_upload(file, s3_key):
-    with open('/tmp/'+s3_key, 'w') as f:
-        f.write(file.read())
-    
 @app.route('/site/upload', defaults={'upload_group': None}, methods=['GET'])
 @app.route('/site/upload/<upload_group>', methods=['POST'])
 def upload_file(upload_group):
@@ -127,14 +122,8 @@ def upload_file(upload_group):
         try:
             file = request.files['file']
             if file.filename and allowed_file(file.filename):
-                s3_key = str(uuid.uuid4())
-                if not s3:
-                    mock_upload(file, s3_key);
-                else:
-                    key = s3.new_key(s3_prefix + s3_key)
-                    key.set_contents_from_file(file)
-                
-                g.cursor.execute('insert into images (s3_key, upload_group) values (%s, %s)', (s3_key, upload_group))
+                store_key = store.save(file)
+                g.cursor.execute('insert into images (store_key, upload_group) values (%s, %s)', (store_key, upload_group))
                 g.db.commit()
                 flash('successfully uploaded file', 'alert-success')
             else:
