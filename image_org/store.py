@@ -16,11 +16,11 @@ def resize(img, box, fit, out, quality=90):
     @param out: file-like-object - save the image into the output stream
     '''
     #preresize image with factor 2, 4, 8 and fast algorithm
-#    factor = 1
-#    while img.size[0]/factor > 2*box[0] and img.size[1]*2/factor > 2*box[1]:
-#        factor *=2
-#    if factor > 1:
-#        img.thumbnail((img.size[0]/factor, img.size[1]/factor), Image.NEAREST)
+    factor = 1
+    while img.size[0]/factor > 2*box[0] and img.size[1]*2/factor > 2*box[1]:
+        factor *=2
+    if factor > 1:
+        img.thumbnail((img.size[0]/factor, img.size[1]/factor), Image.NEAREST)
 
     #calculate the cropping box and get the cropped part
     if fit:
