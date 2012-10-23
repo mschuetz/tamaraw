@@ -74,8 +74,6 @@ def get_properties(store_key):
     
     return jsonify({store_key: {'created_at': str(created_at), 'href': '/%s/file' % (store_key), 'properties': properties}})
 
-#Image = namedtuple('id', 'created_at', 'store_key')
-
 class Image:
     def __init__(self, db_id, created_at, store_key):
         self.db_id = db_id
