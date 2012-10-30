@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, abort, session, Response, send_file, g, jsonify
-import boto, MySQLdb, os, json
+import MySQLdb, os, json
 from collections import namedtuple
 from werkzeug.utils import secure_filename
 from flask.helpers import flash
@@ -8,8 +8,9 @@ from image_org.store import S3Store, LocalStore
 with open(os.environ['HOME'] + '/.image_org.conf') as f:
     config = json.load(f)
 
-#store = S3Store(**config['s3']['credentials']), config['s3']['bucket'], 'images_')
-store = LocalStore('/tmp')
+store = S3Store(config['s3']['credentials'], config['s3']['bucket'], 'images_')
+
+#store = LocalStore('/tmp')
 
 UPLOAD_FOLDER = '/tmp'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -43,8 +44,8 @@ def get_image(store_key):
         x = int(request.args.get('x'))
         y = int(request.args.get('y'))
         return store.deliver_image(store_key, (x, y))
-    except: # Exception, e:
-        #print >>sys.stderr, 'get_image: ex = %s' % e
+    except Exception, e:
+#        print >>sys.stderr, 'get_image: ex = %s' % e
         return store.deliver_image(store_key)
 
 @app.route('/images/<store_key>')

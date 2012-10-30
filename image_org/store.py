@@ -1,11 +1,10 @@
-import itertools, random, os, magic, Image, re, sys
+import random, os, magic, Image, re, base64, struct, boto, time
 from flask import abort, redirect
 from flask.helpers import send_file
+import tempfile
 
-# supposedly this is atomic
-counter = itertools.count()
 def unique_id():
-    return '%x_%x_%x' % (os.getpid(), counter.next(), random.randint(0,4096))
+    return base64.urlsafe_b64encode(struct.pack('fHH', time.time(), os.getpid(), random.randint(0, 65536))).replace('=', '_')
 
 # http://united-coders.com/christian-harms/image-resizing-tips-every-coder-should-know/
 def resize(img, box, fit, out, quality=90):
@@ -103,7 +102,7 @@ def create_upload_group():
 
 class S3Store (Store):
     def __init__(self, credentials, bucket, prefix=''):
-        self.s3 = boto.connect_s3(credentials).get_bucket(bucket)
+        self.s3 = boto.connect_s3(**credentials).get_bucket(bucket)
         self.prefix = prefix
 
     def thumbnail_key(self, key, size):
@@ -111,35 +110,41 @@ class S3Store (Store):
 
     def create_thumbnail(self, key, size):
         s3_key = self.s3.get_key(self.prefix + key)
-        thumb_s3_key = self.s3.create_key(self.prefix + self.thumbnail_key(key, size))
-        s3_key.open()
+        thumb_s3_key = self.s3.new_key(self.prefix + self.thumbnail_key(key, size))
+        
+        in_tmp = tempfile.TemporaryFile()
+        in_tmp.write(s3_key.read())
+        in_tmp.seek(0)
         try: 
-            thumb_s3_key.open()
+            img = Image.open(in_tmp)
+            out_tmp = tempfile.TemporaryFile()
             try:
-                resize(s3_key, size, False, thumb_s3_key)
+                resize(img, size, False, out_tmp)
+                out_tmp.seek(0)
+                thumb_s3_key.set_contents_from_file(out_tmp)
             finally:
-                thumb_s3_key.close()
+                out_tmp.close()
         finally:
-            s3_key.close()
+            in_tmp.close()
 
     def deliver_image(self, key, size=None):
         if size:
             thumb_key = self.thumbnail_key(key, size)
-            if thumb_key == None:
+            if self.s3.get_key(self.prefix + thumb_key) == None:
                 self.create_thumbnail(key, size)
-            return self.deliver_file(self.thumbnail_path(key, size))
+            return self.deliver_file(self.prefix + thumb_key)
         else:
-            return self.deliver_file(self.path(key))
+            return self.deliver_file(self.prefix + key)
 
     def deliver_file(self, key):
         if key:
-            url = key.generate_url(3600)
+            url = self.s3.get_key(key).generate_url(3600)
             return redirect(url, 307)
         else:
             abort(404)
             
     def save(self, fp):
         key_name = unique_id()
-        key = s3.new_key(s3_prefix + key_name)
-        key.set_contents_from_file(file)
+        key = self.s3.new_key(self.prefix + key_name)
+        key.set_contents_from_file(fp)
         return key_name
