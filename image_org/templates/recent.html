@@ -17,8 +17,9 @@
 	</div>
 </div>
 <div>
+{% for row in images|batch(4) %}
 <ul class="thumbnails">
-	{% for image in images %}
+	{% for image in row %}
  	<li class="span3">
 	<div class="thumbnail">
 		<img src="{{ url_for('get_image', store_key=image.store_key, x=320, y=240) }}"/>
@@ -27,6 +28,18 @@
 	</li>
 	{% endfor %}
 </ul>
-
+{% endfor %}
+<ul class="pager">
+	{% if prev_offset is defined %}
+		<li class="previous"><a href="{{ url_for('recent_images', offset=prev_offset) }}">&larr; Previous</a></li>
+	{% else %}
+		<li class="previous disabled"><a href="#">&larr; Previous</a></li>
+	{% endif %}
+	{% if next_offset is defined %}
+		<li class="next"><a href="{{ url_for('recent_images', offset=next_offset) }}">&rarr; Next</a></li>
+	{% else %}
+		<li class="next disabled"><a href="#">&rarr; Next</a></li>
+	{% endif%}
+</ul>
 </div>
 {% endblock %}
