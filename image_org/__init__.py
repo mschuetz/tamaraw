@@ -8,9 +8,8 @@ from image_org.store import S3Store, LocalStore
 with open(os.environ['HOME'] + '/.image_org.conf') as f:
     config = json.load(f)
 
-store = S3Store(config['s3']['credentials'], config['s3']['bucket'], 'images_')
-
-#store = LocalStore('/tmp')
+#store = S3Store(config['s3']['credentials'], config['s3']['bucket'], 'images_')
+store = LocalStore('/tmp')
 
 UPLOAD_FOLDER = '/tmp'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -45,10 +44,10 @@ def get_image(store_key):
         y = int(request.args.get('y'))
         return store.deliver_image(store_key, (x, y))
     except Exception, e:
-#        print >>sys.stderr, 'get_image: ex = %s' % e
+        #print >>sys.stderr, 'get_image: ex = %s' % e
         return store.deliver_image(store_key)
 
-@app.route('/images/<store_key>')
+@app.route('/images/<store_key>', )
 def get_properties(store_key):
     def add_rows(cursor, obj):
         for row in g.cursor:
@@ -72,8 +71,8 @@ def get_properties(store_key):
                         join property_types on property_types.id=enum_values.type_id
                         where images_enums.image_id=%s""", image_id)
     add_rows(g.cursor, properties)
-    
-    return jsonify({store_key: {'created_at': str(created_at), 'href': '/%s/file' % (store_key), 'properties': properties}})
+#    return jsonify({store_key: {'created_at': str(created_at), 'href': '/%s/file' % (store_key), 'properties': properties}})
+    render_template('image')
 
 class Image:
     def __init__(self, db_id, created_at, store_key):
@@ -81,32 +80,44 @@ class Image:
         self.created_at = created_at
         self.store_key = store_key 
 
-def to_image_list(cursor):
+def to_image_list(cursor, page_size):
     images = []
     more = False
     for row in cursor:
-        if len(images) == 20:
+        if len(images) == page_size:
             more = True
             break
         images.append(Image(row[0], row[1], row[2]))
     return images, more
 
 # the accompanying website
-@app.route('/site/recent', defaults={'offset': 0})
+@app.route('/site/recent/', defaults={'offset': 0})
 @app.route('/site/recent/<int:offset>')
 def recent_images(offset):
-    page_size = 20
+    page_size = 8
     g.cursor.execute('select id, created_at, store_key from images order by created_at desc limit %s,%s', (offset, page_size + 1))
-    images, more = to_image_list(g.cursor)
-    return render_template('recent.html', images=images, more=more, page_size=page_size, offset=offset)
+    return render_image_list(g.cursor, 'recent.html', page_size, offset)
 
-@app.route('/site/upload_group/<upload_group>', defaults={'offset': 0})
-@app.route('/site/recent/<upload_group>/<int:offset>')
+@app.route('/site/upload_group/<upload_group>/', defaults={'offset': 0})
+@app.route('/site/upload_group/<upload_group>/<int:offset>')
 def upload_group(upload_group, offset):
-    page_size = 20
+    page_size = 2
     g.cursor.execute('select id, created_at, store_key from images where upload_group=%s order by created_at desc limit %s,%s', (upload_group, offset, page_size + 1))
-    images, more = to_image_list(g.cursor)
-    return render_template('upload_group.html', images=images, more=more, page_size=page_size, offset=offset)
+    return render_image_list(g.cursor, 'upload_group.html', page_size, offset)
+
+def render_image_list(cursor, template_name, page_size, offset):
+    images, more = to_image_list(cursor, page_size)
+    params = {'images': images, 'offset': offset}
+    if more:
+        params['next_offset'] = offset + page_size
+    if offset > 0:
+        prev_offset = offset - page_size
+        if prev_offset > 0:
+            params['prev_offset'] = prev_offset
+        else: 
+            params['prev_offset'] = 0
+    return render_template('recent.html', **params)
+    
 
 def allowed_file(filename):
     return '.' in filename and \

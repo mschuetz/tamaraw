@@ -4,29 +4,21 @@
 	<div class="navbar-inner">
 		<!--<a class="brand" href="#">Title</a>-->
 		<ul class="nav">
-			<li class="active">
-				<a href="/site/recent">Recent Images</a>
+			<li>
+				<a href="{{ url_for('recent_images')}}">Recent Images</a>
 			</li>
 			<li>
 				<a href="#">Search</a>
 			</li>
-			<li>
+			<li class="active">
 				<a href="/site/upload">Upload</a>
 			</li>
 		</ul>
 	</div>
 </div>
 <div>
-<ul class="thumbnails">
-	{% for image in images %}
- 	<li class="span3">
-	<div class="thumbnail">
-		<img src="{{ url_for('get_image', store_key=image.store_key, x=320, y=240) }}"/>
-		<p>uploaded {{ image.created_at }}</p>
-	</div>
-	</li>
-	{% endfor %}
-</ul>
+	
+{% call image_list(images, 'upload_group', prev_offset, next_offset, upload_group=upload_group) %}{%endcall%}
 
 </div>
 {% endblock %}
