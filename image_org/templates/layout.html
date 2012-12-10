@@ -60,7 +60,7 @@
 	{% for image in row %}
  	<li class="span3">
 	<div class="thumbnail">
-		<img src="{{ url_for('get_image', store_key=image.store_key, x=320, y=240) }}"/>
+		<img src="{{ url_for('get_image', store_key=image.store_key, x=400, y=300) }}"/>
 		<p>uploaded {{ image.created_at }}</p>
 	</div>
 	</li>

@@ -4,10 +4,10 @@ from flask.helpers import send_file
 import tempfile
 
 def unique_id():
-    return base64.urlsafe_b64encode(struct.pack('fHH', time.time(), os.getpid(), random.randint(0, 65536))).replace('=', '_')
+    return base64.urlsafe_b64encode(struct.pack('fHH', time.time(), os.getpid() % 65536, random.randint(0, 65535))).replace('=', '_')
 
 # http://united-coders.com/christian-harms/image-resizing-tips-every-coder-should-know/
-def resize(img, box, fit, out, quality=90):
+def resize(img, box, fit, out, quality=75):
     '''Downsample the image.
     @param img: Image -  an Image-object
     @param box: tuple(x, y) - the bounding box of the result image
@@ -16,24 +16,24 @@ def resize(img, box, fit, out, quality=90):
     '''
     #preresize image with factor 2, 4, 8 and fast algorithm
     factor = 1
-    while img.size[0]/factor > 2*box[0] and img.size[1]*2/factor > 2*box[1]:
-        factor *=2
+    while img.size[0] / factor > 2 * box[0] and img.size[1] * 2 / factor > 2 * box[1]:
+        factor *= 2
     if factor > 1:
-        img.thumbnail((img.size[0]/factor, img.size[1]/factor), Image.NEAREST)
+        img.thumbnail((img.size[0] / factor, img.size[1] / factor), Image.NEAREST)
 
     #calculate the cropping box and get the cropped part
     if fit:
         x1 = y1 = 0
         x2, y2 = img.size
-        wRatio = 1.0 * x2/box[0]
-        hRatio = 1.0 * y2/box[1]
+        wRatio = 1.0 * x2 / box[0]
+        hRatio = 1.0 * y2 / box[1]
         if hRatio > wRatio:
-            y1 = int(y2/2-box[1]*wRatio/2)
-            y2 = int(y2/2+box[1]*wRatio/2)
+            y1 = int(y2 / 2 - box[1] * wRatio / 2)
+            y2 = int(y2 / 2 + box[1] * wRatio / 2)
         else:
-            x1 = int(x2/2-box[0]*hRatio/2)
-            x2 = int(x2/2+box[0]*hRatio/2)
-        img = img.crop((x1,y1,x2,y2))
+            x1 = int(x2 / 2 - box[0] * hRatio / 2)
+            x2 = int(x2 / 2 + box[0] * hRatio / 2)
+        img = img.crop((x1, y1, x2, y2))
 
     #Resize the image with best quality algorithm ANTI-ALIAS
     img.thumbnail(box, Image.ANTIALIAS)
@@ -108,6 +108,9 @@ class S3Store (Store):
     def thumbnail_key(self, key, size):
         return key + ('_%sx%s' % (size))
 
+    # this is rather inefficient but it's impossible to create a PIL Image directly from an S3
+    # key as it doesn't support seeking. Therefore, the file is saved to a local temp file which
+    # is then scaled and saved to a local temp file again because boto s3 keys do not support writing. 
     def create_thumbnail(self, key, size):
         s3_key = self.s3.get_key(self.prefix + key)
         thumb_s3_key = self.s3.new_key(self.prefix + self.thumbnail_key(key, size))
