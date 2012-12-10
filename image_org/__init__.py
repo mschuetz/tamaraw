@@ -16,7 +16,6 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask('image_org')
 app.config['SECRET_KEY'] = 'ohchohyaqu3imiew4oLahgh4oMa3Shae'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.before_request
 def before_request():
@@ -47,7 +46,7 @@ def get_image(store_key):
         #print >>sys.stderr, 'get_image: ex = %s' % e
         return store.deliver_image(store_key)
 
-@app.route('/images/<store_key>', )
+@app.route('/images/<store_key>',)
 def get_properties(store_key):
     def add_rows(cursor, obj):
         for row in g.cursor:
@@ -121,13 +120,14 @@ def render_image_list(cursor, template_name, page_size, offset):
 
 def allowed_file(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-import uuid,sys
+import uuid, sys
 
 @app.route('/site/upload', defaults={'upload_group': None}, methods=['GET'])
 @app.route('/site/upload/<upload_group>', methods=['POST'])
 def upload_file(upload_group):
+    status = 500
     if request.method == 'POST':
         try:
             file = request.files['file']
@@ -135,14 +135,18 @@ def upload_file(upload_group):
                 store_key = store.save(file)
                 g.cursor.execute('insert into images (store_key, upload_group) values (%s, %s)', (store_key, upload_group))
                 g.db.commit()
+                status = 200
                 flash('successfully uploaded file', 'alert-success')
             else:
+                status = 400
+                app.logger.warning('invalid filename: %s' % (file.filename))
                 flash('invalid file', 'alert-error')
         except:
+            status = 500
             app.logger.exception('error during upload')
             flash('encountered an exception during upload ' + str(sys.exc_info()[0]), 'alert-error')
             
-    return render_template('upload.html', upload_group=uuid.uuid4())
+    return render_template('upload.html', upload_group=uuid.uuid4()), status
 
 @app.route('/site/<template>')
 def site(template):
