@@ -1,35 +1,30 @@
 from flask import Flask, render_template, request, redirect, url_for, abort, session, Response, send_file, g, jsonify
-import MySQLdb, os, json
-from collections import namedtuple
+import os, json
 from werkzeug.utils import secure_filename
 from flask.helpers import flash
 from image_org.store import S3Store, LocalStore
+import rawes
+from datetime import datetime
+from dateutil import tz
 
 with open(os.environ['HOME'] + '/.image_org.conf') as f:
     config = json.load(f)
 
-#store = S3Store(config['s3']['credentials'], config['s3']['bucket'], 'images_')
-store = LocalStore('/tmp')
+if config['store'] == 's3':
+    store = S3Store(config['s3']['credentials'], config['s3']['bucket'], 'images_')
+elif config['store'] == 'local':
+    store = LocalStore(config['localstore']['basepath'])
+else:
+    raise Exception('no store backend configured, must be s3 or local')
+
+es = rawes.Elastic(**config['elasticsearch']['rawes'])
+es_index = config['elasticsearch']['indexname']
 
 UPLOAD_FOLDER = '/tmp'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask('image_org')
 app.config['SECRET_KEY'] = 'ohchohyaqu3imiew4oLahgh4oMa3Shae'
-
-@app.before_request
-def before_request():
-    def connect_db():
-        g.db = MySQLdb.connect(**config['database'])
-        g.cursor = g.db.cursor()
-    if hasattr(g, 'db'):
-        try:
-            g.cursor = g.db.cursor()
-            g.cursor.execute('select 1+1')
-        except:
-            connect_db()
-    else:
-        connect_db()
 
 @app.teardown_request
 def teardown_request(exception):
@@ -43,7 +38,7 @@ def get_image(store_key):
         y = int(request.args.get('y'))
         return store.deliver_image(store_key, (x, y))
     except Exception, e:
-        #print >>sys.stderr, 'get_image: ex = %s' % e
+        # app.logger.exception('get_image')
         return store.deliver_image(store_key)
 
 @app.route('/images/<store_key>',)
@@ -86,23 +81,33 @@ def to_image_list(cursor, page_size):
         if len(images) == page_size:
             more = True
             break
-        images.append(Image(row[0], row[1], row[2]))
+        images.append(row)
     return images, more
+
+def map_search_results(rawes_result):
+    return [dict(store_key=hit['_id'], **hit['_source']) for hit in rawes_result['hits']['hits']]
+
+def search_images(obj, offset, length):
+    res = es.get('%s/image/_search' % (es_index), data={'query': {'match': obj}},
+                 params={'from': offset, 'size': length})
+    return map_search_results(res)
 
 # the accompanying website
 @app.route('/site/recent/', defaults={'offset': 0})
 @app.route('/site/recent/<int:offset>')
 def recent_images(offset):
     page_size = 8
-    g.cursor.execute('select id, created_at, store_key from images order by created_at desc limit %s,%s', (offset, page_size + 1))
+    #g.cursor.execute('select id, created_at, store_key from images order by created_at desc limit %s,%s', (offset, page_size + 1))
     return render_image_list(g.cursor, 'recent.html', page_size, offset)
 
 @app.route('/site/upload_group/<upload_group>/', defaults={'offset': 0})
 @app.route('/site/upload_group/<upload_group>/<int:offset>')
 def upload_group(upload_group, offset):
-    page_size = 2
-    g.cursor.execute('select id, created_at, store_key from images where upload_group=%s order by created_at desc limit %s,%s', (upload_group, offset, page_size + 1))
-    return render_image_list(g.cursor, 'upload_group.html', page_size, offset)
+    page_size = request.args.get('page_size') or 4
+    #g.cursor.execute('select id, created_at, store_key from images where upload_group=%s order by created_at desc limit %s,%s', (upload_group, offset, page_size + 1))
+    #return render_image_list(g.cursor, 'upload_group.html', page_size, offset)
+    images = search_images({'upload_group': upload_group}, offset, int(page_size) + 1)
+    return render_image_list(images, 'upload_group.html', int(page_size), offset)
 
 def render_image_list(cursor, template_name, page_size, offset):
     images, more = to_image_list(cursor, page_size)
@@ -133,8 +138,12 @@ def upload_file(upload_group):
             file = request.files['file']
             if file.filename and allowed_file(file.filename):
                 store_key = store.save(file)
-                g.cursor.execute('insert into images (store_key, upload_group) values (%s, %s)', (store_key, upload_group))
-                g.db.commit()
+                #g.cursor.execute('insert into images (store_key, upload_group) values (%s, %s)', (store_key, upload_group))
+                #g.db.commit()
+                es.put("%s/image/%s" % (es_index, store_key), data={
+                        'original_filename': file.filename,
+                        "upload_group": upload_group,
+                        "created_at": datetime.now(tz.gettz())})
                 status = 200
                 flash('successfully uploaded file', 'alert-success')
             else:
