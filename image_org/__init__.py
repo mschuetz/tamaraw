@@ -68,22 +68,6 @@ def get_properties(store_key):
 #    return jsonify({store_key: {'created_at': str(created_at), 'href': '/%s/file' % (store_key), 'properties': properties}})
     render_template('image')
 
-class Image:
-    def __init__(self, db_id, created_at, store_key):
-        self.db_id = db_id
-        self.created_at = created_at
-        self.store_key = store_key 
-
-def to_image_list(cursor, page_size):
-    images = []
-    more = False
-    for row in cursor:
-        if len(images) == page_size:
-            more = True
-            break
-        images.append(row)
-    return images, more
-
 def map_search_results(rawes_result):
     return [dict(store_key=hit['_id'], **hit['_source']) for hit in rawes_result['hits']['hits']]
 
@@ -96,23 +80,22 @@ def search_images(obj, offset, length):
 @app.route('/site/recent/', defaults={'offset': 0})
 @app.route('/site/recent/<int:offset>')
 def recent_images(offset):
-    page_size = 8
+    page_size = request.args.get('page_size') or 8
     #g.cursor.execute('select id, created_at, store_key from images order by created_at desc limit %s,%s', (offset, page_size + 1))
     return render_image_list(g.cursor, 'recent.html', page_size, offset)
 
 @app.route('/site/upload_group/<upload_group>/', defaults={'offset': 0})
 @app.route('/site/upload_group/<upload_group>/<int:offset>')
 def upload_group(upload_group, offset):
-    page_size = request.args.get('page_size') or 4
+    page_size = request.args.get('page_size') or 8
     #g.cursor.execute('select id, created_at, store_key from images where upload_group=%s order by created_at desc limit %s,%s', (upload_group, offset, page_size + 1))
     #return render_image_list(g.cursor, 'upload_group.html', page_size, offset)
     images = search_images({'upload_group': upload_group}, offset, int(page_size) + 1)
     return render_image_list(images, 'upload_group.html', int(page_size), offset)
 
-def render_image_list(cursor, template_name, page_size, offset):
-    images, more = to_image_list(cursor, page_size)
-    params = {'images': images, 'offset': offset}
-    if more:
+def render_image_list(images, template_name, page_size, offset):
+    params = {'images': images[0:page_size], 'offset': offset}
+    if len(images) > page_size:
         params['next_offset'] = offset + page_size
     if offset > 0:
         prev_offset = offset - page_size
