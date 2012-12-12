@@ -60,7 +60,9 @@
 	{% for image in row %}
  	<li class="span3">
 	<div class="thumbnail">
-		<img src="{{ url_for('get_image', store_key=image.store_key, x=400, y=300) }}"/>
+		<a href="{{ url_for('image_page', store_key=image.store_key) }}">
+			<img src="{{ url_for('get_image', store_key=image.store_key, x=400, y=300) }}"/>
+		</a>
 		<p>uploaded {{ image.created_at }}</p>
 	</div>
 	</li>
@@ -92,7 +94,6 @@
 				</div>
 			</div>
 
-		</div>
 		</div>
 		<script src="{{url_for('static', filename='vendor/bootstrap/js/bootstrap.min.js') }}"></script>
 		<script src="{{url_for('static', filename='vendor/underscore-min.js') }}"></script>

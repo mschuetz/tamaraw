@@ -109,7 +109,7 @@ def upload_file(upload_group):
                 flash('successfully uploaded file', 'alert-success')
             else:
                 status = 400
-                app.logger.warning('invalid filename: %s' % (file.filename))
+                app.logger.warning('invalid filename: %s', repr(file.filename))
                 flash('invalid file', 'alert-error')
         except:
             status = 500
@@ -117,6 +117,18 @@ def upload_file(upload_group):
             flash('encountered an exception during upload ' + str(sys.exc_info()[0]), 'alert-error')
             
     return render_template('upload.html', upload_group=uuid.uuid4()), status
+import re
+@app.route('/site/image/<store_key>')
+def image_page(store_key):
+    if not re.match("^[0-9a-zA-Z_]+$", store_key):
+        app.logger.warning('invalid store_key %s', repr(store_key))
+        abort(400)
+    res = es.get('%s/image/%s' % (es_index, store_key))
+    if not res['exists']:
+        abort(404)
+    image = res['_source']
+    image['store_key'] = store_key
+    return render_template('image.html', image=image)
 
 @app.route('/site/<template>')
 def site(template):
