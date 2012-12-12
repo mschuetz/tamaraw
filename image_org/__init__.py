@@ -41,61 +41,39 @@ def get_image(store_key):
         # app.logger.exception('get_image')
         return store.deliver_image(store_key)
 
-@app.route('/images/<store_key>',)
-def get_properties(store_key):
-    def add_rows(cursor, obj):
-        for row in g.cursor:
-            key, value = row
-            obj[key] = value
-    
-    if g.cursor.execute('select id, created_at from images where store_key=%s', store_key) == 0:
-        abort(404)
-
-    image_id, created_at = g.cursor.fetchone()
-    
-    g.cursor.execute("""select property_types.name, images_text.value from images_text
-                        join property_types on property_types.id=images_text.property_type_id
-                        where images_text.image_id=%s""", image_id)
-
-    properties = {}
-    add_rows(g.cursor, properties)
-
-    g.cursor.execute("""select property_types.name, enum_values.name from images_enums
-                        join enum_values on images_enums.enum_value_id=enum_values.id
-                        join property_types on property_types.id=enum_values.type_id
-                        where images_enums.image_id=%s""", image_id)
-    add_rows(g.cursor, properties)
-#    return jsonify({store_key: {'created_at': str(created_at), 'href': '/%s/file' % (store_key), 'properties': properties}})
-    render_template('image')
-
 def map_search_results(rawes_result):
     return [dict(store_key=hit['_id'], **hit['_source']) for hit in rawes_result['hits']['hits']]
 
-def search_images(obj, offset, length):
-    res = es.get('%s/image/_search' % (es_index), data={'query': {'match': obj}},
-                 params={'from': offset, 'size': length})
-    return map_search_results(res)
+def search_images(data, offset, length, additional_params=None):
+    # todo merge paging with additional_params
+    res = es.get('%s/image/_search' % (es_index), data=data, params={'from': offset, 'size': length})
+    return map_search_results(res), int(res['hits']['total']) > (offset + length)
+
+def range_query(field, _from, to):
+    return {'range': {field: {'from': _from, 'to': to}}}
 
 # the accompanying website
 @app.route('/site/recent/', defaults={'offset': 0})
 @app.route('/site/recent/<int:offset>')
 def recent_images(offset):
     page_size = request.args.get('page_size') or 8
-    #g.cursor.execute('select id, created_at, store_key from images order by created_at desc limit %s,%s', (offset, page_size + 1))
-    return render_image_list(g.cursor, 'recent.html', page_size, offset)
+    images, has_more = search_images({'query': range_query('created_at', datetime.fromtimestamp(0, tz.gettz()), datetime.now(tz.gettz())),
+                                      'sort': {'created_at': {'order': 'desc'}}},
+                                     offset, page_size)
+    return render_image_list(images, 'recent.html', page_size, offset, has_more)
 
 @app.route('/site/upload_group/<upload_group>/', defaults={'offset': 0})
 @app.route('/site/upload_group/<upload_group>/<int:offset>')
 def upload_group(upload_group, offset):
     page_size = request.args.get('page_size') or 8
-    #g.cursor.execute('select id, created_at, store_key from images where upload_group=%s order by created_at desc limit %s,%s', (upload_group, offset, page_size + 1))
-    #return render_image_list(g.cursor, 'upload_group.html', page_size, offset)
-    images = search_images({'upload_group': upload_group}, offset, int(page_size) + 1)
-    return render_image_list(images, 'upload_group.html', int(page_size), offset)
+    images, has_more = search_images({'query': {'match': {'upload_group': upload_group}},
+                                      'sort': {'created_at': {'order': 'desc'}}},
+                                     offset, page_size)
+    return render_image_list(images, 'upload_group.html', int(page_size), offset, has_more)
 
-def render_image_list(images, template_name, page_size, offset):
-    params = {'images': images[0:page_size], 'offset': offset}
-    if len(images) > page_size:
+def render_image_list(images, template_name, page_size, offset, has_more):
+    params = {'images': images, 'offset': offset}
+    if has_more:
         params['next_offset'] = offset + page_size
     if offset > 0:
         prev_offset = offset - page_size
