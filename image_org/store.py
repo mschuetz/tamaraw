@@ -58,6 +58,9 @@ class Store:
 
     def deliver_image(self, key, size):
         raise NotImplementedError
+    
+    def remove(self, key):
+        raise NotImplementedError
 
 class LocalStore:
     def __init__(self, root):
@@ -96,6 +99,9 @@ class LocalStore:
 
     def deliver_file(self, path):
         return send_file(path, magic.from_file(path))
+    
+    def remove(self, key):
+        os.remove(self.path(key))
 
 def create_upload_group():
     return time.strftime('%Y%m%d_') + unique_id()
@@ -151,3 +157,6 @@ class S3Store (Store):
         key = self.s3.new_key(self.prefix + key_name)
         key.set_contents_from_file(fp)
         return key_name
+
+    def remove(self, key):
+        self.s3.get_key(self.prefix + key).delete()
