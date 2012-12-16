@@ -28,6 +28,25 @@ app.config['SECRET_KEY'] = 'ohchohyaqu3imiew4oLahgh4oMa3Shae'
 def teardown_request(exception):
     if hasattr(g, 'cursor'):
         g.cursor.close()
+        
+def linkify_image(image):
+    return dict(href=url_for('get_image', store_key=image['store_key']), **image)
+
+@app.route('/images/<store_key>')
+def api_get_image(store_key):
+    return jsonify(linkify_image(image_dao.get(store_key)))
+
+@app.route('/images/')
+@app.route('/images')
+def api_list_images():
+    offset = int(request.args.get('offset') or 0)
+    length = int(request.args.get('length') or 100)
+    images, has_more = image_dao.search({'query': dao.range_query('created_at', datetime.fromtimestamp(0, tz.gettz()), datetime.now(tz.gettz())),
+                                     'sort': {'created_at': {'order': 'desc'}}},
+                                    offset, length)
+    
+    return Response(json.dumps([linkify_image(image) for image in images]),
+                    mimetype='application/json')
 
 @app.route('/images/<store_key>/file')
 def get_image(store_key):
@@ -108,13 +127,14 @@ def upload_file(upload_group):
 
 @app.route('/site/image/<store_key>')
 def image_page(store_key):
-    if not re.match("^[0-9a-zA-Z_]+$", store_key):
+    try:
+        image = image_dao.get(store_key)
+        if image == None:
+            abort(404)
+        return render_template('image.html', image=image)
+    except dao.InvalidStoreKey:
         app.logger.warning('invalid store_key %s', repr(store_key))
         abort(400)
-    image = image_dao.get(store_key)
-    if image == None:
-        abort(404)
-    return render_template('image.html', image=image)
 
 @app.route('/site/<template>')
 def site(template):

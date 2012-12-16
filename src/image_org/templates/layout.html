@@ -24,8 +24,8 @@
 	</head>
 
 	<body>
-		<!--<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js" ></script>-->
-		<script src="{{url_for('static', filename='vendor/jquery-ui/js/jquery-1.8.2.js') }}"></script>
+		<script src="{{url_for('static', filename='vendor/jquery-1.8.3.min.js') }}"></script>
+		<script src="{{url_for('static', filename='vendor/underscore-min.js') }}"></script>
 		<div class="navbar navbar-fixed-top navbar-inverse">
 			<div class="navbar-inner">
 				<div class="container-fluid">
@@ -86,18 +86,16 @@
 </ul>
 {% endmacro %}
 		<div class="container-fluid">
-			<div class="span12">
 				{% block body %}{% endblock %}
 				<hr>
 				<div>
 					© idlecrew 2012
 				</div>
-			</div>
 
 		</div>
 		<script src="{{url_for('static', filename='vendor/bootstrap/js/bootstrap.min.js') }}"></script>
-		<script src="{{url_for('static', filename='vendor/underscore-min.js') }}"></script>
-		<script src="{{url_for('static', filename='vendor/backbone-min.js') }}"></script>
+		
+<!--		<script src="{{url_for('static', filename='vendor/backbone-min.js') }}"></script>-->
 	</body>
 
 </html>

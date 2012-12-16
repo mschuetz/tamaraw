@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="navbar">
+	<div class="navbar-inner">
+		<!--<a class="brand" href="#">Title</a>-->
+		<ul class="nav">
+			<li>
+				<a href="/site/recent">Recent Images</a>
+			</li>
+			<li>
+				<a href="#">Search</a>
+			</li>
+			<li>
+				<a href="/site/upload">Upload</a>
+			</li>
+		</ul>
+	</div>
+</div>
+
+<script src="{{url_for('static', filename='vendor/backbone-min.js') }}"></script>
+<script src="{{url_for('static', filename='app.js') }}"></script>
+
+<script type="text/template" id="tpl-image-list-item">
+	<div class="thumbnail">
+		<a href="#images/<%= store_key %>">
+			<img src="<%= href %>?x=400&amp;y=300"/>
+		</a>
+		<p>uploaded <%= created_at %></p>
+	</div>
+</script>
+
+<div id="content">
+	
+</div>
+{% endblock %}
