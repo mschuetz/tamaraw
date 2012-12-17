@@ -11,9 +11,26 @@ _.mixin({
 	
 window.Image = Backbone.Model.extend();
 
-window.ImageCollection = Backbone.Collection.extend({
+window.ImageCollection = Backbone.Paginator.requestPager.extend({
 	model: Image,
-	url: '/images'
+	paginator_core: {
+		url: '/images',
+		dataType: 'json'
+	},
+	paginator_ui: {
+		firstPage: 0,
+		currentPage: 0,
+		perPage: 8,
+		totalPages: 2342
+	},
+	server_api:{
+		'length': function() { return this.perPage },
+		'offset': function() { return this.currentPage * this.perPage }
+	},
+	parse: function(obj) {
+		this.totalPages = Math.ceil(obj.total / this.perPage);
+		return obj.images;
+	}
 });
 
 window.ImageListView = Backbone.View.extend({
@@ -21,6 +38,20 @@ window.ImageListView = Backbone.View.extend({
 	initialize: function() {
 		this.model.bind("reset", this.render, this);
 	},
+	events:{
+		'click a.servernext': 'nextPage',
+		'click a.serverprevious': 'previousPage',
+	},
+	nextPage: function(e) {
+		e.preventDefault();
+		console.log("nextPage");
+		this.model.requestNextPage({add: false});
+	},
+	previousPage: function(e) {
+		e.preventDefault();
+		this.model.requestPreviousPage({add: false});
+	},
+	pagerTemplate: _.template($('#tpl-pager').html()),
 	render: function(eventName) {
 		_.each(_.partition(this.model.models, 4), function(images) {
 			listElement = $('<ul class="thumbnails"></ul>').appendTo(this.$el)
@@ -28,6 +59,7 @@ window.ImageListView = Backbone.View.extend({
 				listElement.append(new ImageListItemView({model: image }).render().el);
 			}, this);
 		}, this);
+		this.$el.append(this.pagerTemplate(this.model));
 		return this;
 	}
 });
@@ -47,16 +79,18 @@ window.ImageListItemView = Backbone.View.extend({
 
 var AppRouter = Backbone.Router.extend({
 	routes: {
-		"": "list"
+		"images/:page": "list"
 	},
-	list: function(){
+	list: function(page) {
+		// TODO define once outside the function?
 		this.imageList = new ImageCollection();
 		this.imageListView = new ImageListView({model: this.imageList});
-		this.imageList.fetch();
+		this.imageList.goTo(page);
 		$('#content').html(this.imageListView.render().el);
 	}
 });
 
 var app = new AppRouter();
-Backbone.history.start();
+Backbone.history.start(); //({pushState: true, root: "/site/app/"});
+app.navigate("images/0");
 });

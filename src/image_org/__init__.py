@@ -41,12 +41,11 @@ def api_get_image(store_key):
 def api_list_images():
     offset = int(request.args.get('offset') or 0)
     length = int(request.args.get('length') or 100)
-    images, has_more = image_dao.search({'query': dao.range_query('created_at', datetime.fromtimestamp(0, tz.gettz()), datetime.now(tz.gettz())),
+    images, total = image_dao.search({'query': dao.range_query('created_at', datetime.fromtimestamp(0, tz.gettz()), datetime.now(tz.gettz())),
                                      'sort': {'created_at': {'order': 'desc'}}},
                                     offset, length)
     
-    return Response(json.dumps([linkify_image(image) for image in images]),
-                    mimetype='application/json')
+    return jsonify(total=total, images=[linkify_image(image) for image in images])
 
 @app.route('/images/<store_key>/file')
 def get_image(store_key):
@@ -63,18 +62,20 @@ def get_image(store_key):
 @app.route('/site/recent/<int:offset>')
 def recent_images(offset):
     page_size = request.args.get('page_size') or 8
-    images, has_more = image_dao.search({'query': dao.range_query('created_at', datetime.fromtimestamp(0, tz.gettz()), datetime.now(tz.gettz())),
+    images, total = image_dao.search({'query': dao.range_query('created_at', datetime.fromtimestamp(0, tz.gettz()), datetime.now(tz.gettz())),
                                          'sort': {'created_at': {'order': 'desc'}}},
                                         offset, page_size)
+    has_more = total > (offset + page_size)
     return render_image_list(images, 'recent.html', page_size, offset, has_more)
 
 @app.route('/site/upload_group/<upload_group>/', defaults={'offset': 0})
 @app.route('/site/upload_group/<upload_group>/<int:offset>')
 def upload_group(upload_group, offset):
     page_size = request.args.get('page_size') or 8
-    images, has_more = image_dao.search({'query': {'match': {'upload_group': upload_group}},
+    images, total = image_dao.search({'query': {'match': {'upload_group': upload_group}},
                                          'sort': {'created_at': {'order': 'desc'}}},
                                         offset, page_size)
+    has_more = total > (offset + page_size)
     return render_image_list(images, 'upload_group.html', int(page_size), offset, has_more)
 
 def render_image_list(images, template_name, page_size, offset, has_more):
@@ -136,8 +137,10 @@ def image_page(store_key):
         app.logger.warning('invalid store_key %s', repr(store_key))
         abort(400)
 
+@app.route('/site/<template>/<path:more>')
+@app.route('/site/<template>/')
 @app.route('/site/<template>')
-def site(template):
+def site(template, more=None):
     return render_template(template + '.html')
 
 @app.route('/')

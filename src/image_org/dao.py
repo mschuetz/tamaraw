@@ -23,7 +23,7 @@ class ImageDao:
     def search(self, data, offset, length, additional_params=None):
         # todo merge paging with additional_params
         res = self.es.get('%s/image/_search' % (self.indexname), data=data, params={'from': offset, 'size': length})
-        return self.map_search_results(res), int(res['hits']['total']) > (offset + length)
+        return self.map_search_results(res), int(res['hits']['total'])
     
     def get(self, store_key):
         check_store_key(store_key)
