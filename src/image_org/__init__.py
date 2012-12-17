@@ -24,11 +24,12 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 app = Flask('image_org')
 app.config['SECRET_KEY'] = 'ohchohyaqu3imiew4oLahgh4oMa3Shae'
 
+
 @app.teardown_request
 def teardown_request(exception):
     if hasattr(g, 'cursor'):
         g.cursor.close()
-        
+
 def linkify_image(image):
     return dict(href=url_for('get_image', store_key=image['store_key']), **image)
 
@@ -44,7 +45,7 @@ def api_list_images():
     images, total = image_dao.search({'query': dao.range_query('created_at', datetime.fromtimestamp(0, tz.gettz()), datetime.now(tz.gettz())),
                                      'sort': {'created_at': {'order': 'desc'}}},
                                     offset, length)
-    
+
     return jsonify(total=total, images=[linkify_image(image) for image in images])
 
 @app.route('/images/<store_key>/file')
@@ -89,7 +90,7 @@ def render_image_list(images, template_name, page_size, offset, has_more):
         else: 
             params['prev_offset'] = 0
     return render_template('recent.html', **params)
-    
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -123,7 +124,6 @@ def upload_file(upload_group):
             status = 500
             app.logger.exception('error during upload')
             flash('encountered an exception during upload ' + str(sys.exc_info()[0]), 'alert-error')
-            
     return render_template('upload.html', upload_group=uuid.uuid4()), status
 
 @app.route('/site/image/<store_key>')

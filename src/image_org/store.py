@@ -44,7 +44,7 @@ def resize(img, box, fit, out, quality=75):
 class StoreError (StandardError):
     def __init__(self, msg):
         super(msg)
-        
+
 class NotFoundError (StoreError):
     pass
 
@@ -58,14 +58,14 @@ class Store:
 
     def deliver_image(self, key, size):
         raise NotImplementedError
-    
+
     def remove(self, key):
         raise NotImplementedError
 
 class LocalStore:
     def __init__(self, root):
         self.root = root
-    
+
     def save(self, fp):
         key = unique_id()
         filename = self.root + '/' + key
@@ -99,7 +99,7 @@ class LocalStore:
 
     def deliver_file(self, path):
         return send_file(path, magic.from_file(path))
-    
+
     def remove(self, key):
         os.remove(self.path(key))
 
@@ -120,11 +120,11 @@ class S3Store (Store):
     def create_thumbnail(self, key, size):
         s3_key = self.s3.get_key(self.prefix + key)
         thumb_s3_key = self.s3.new_key(self.prefix + self.thumbnail_key(key, size))
-        
+
         in_tmp = tempfile.TemporaryFile()
         in_tmp.write(s3_key.read())
         in_tmp.seek(0)
-        try: 
+        try:
             img = Image.open(in_tmp)
             out_tmp = tempfile.TemporaryFile()
             try:
@@ -151,7 +151,7 @@ class S3Store (Store):
             return redirect(url, 307)
         else:
             abort(404)
-            
+
     def save(self, fp):
         key_name = unique_id()
         key = self.s3.new_key(self.prefix + key_name)

@@ -1,9 +1,11 @@
-$(function() {
+$(function () {
+
+"use strict";
 
 _.mixin({
 	partition: function (arr, size){
-	    if (_.size(arr) <= size) {
-	    	return [arr];
+		if (_.size(arr) <= size) {
+			return [arr];
 	    }
 	    return [_.first(arr, size)].concat(_.partition(_.rest(arr,size), size));
 	}
@@ -24,8 +26,8 @@ window.ImageCollection = Backbone.Paginator.requestPager.extend({
 		totalPages: 2342
 	},
 	server_api:{
-		'length': function() { return this.perPage },
-		'offset': function() { return this.currentPage * this.perPage }
+		'length': function() { return this.perPage; },
+		'offset': function() { return this.currentPage * this.perPage; }
 	},
 	parse: function(obj) {
 		this.totalPages = Math.ceil(obj.total / this.perPage);
@@ -41,7 +43,7 @@ window.ImageListView = Backbone.View.extend({
 	},
 	events:{
 		'click a.servernext': 'nextPage',
-		'click a.serverprevious': 'previousPage',
+		'click a.serverprevious': 'previousPage'
 	},
 	nextPage: function(e) {
 		e.preventDefault();
