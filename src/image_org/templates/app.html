@@ -19,7 +19,7 @@
 
 <script src="{{url_for('static', filename='vendor/backbone-min.js') }}"></script>
 <script src="{{url_for('static', filename='vendor/backbone.paginator.min.js') }}"></script>
-<script src="{{url_for('static', filename='app-paged.js') }}"></script>
+<script src="{{url_for('static', filename='app.js') }}"></script>
 
 <script type="text/template" id="tpl-image-list-item">
 	<div class="thumbnail">
@@ -33,12 +33,12 @@
 <script type="text/template" id="tpl-pager">
 	<ul class="pager">
 	<% if (currentPage > 0) { %>
-		<li class="previous"><a class="serverprevious" href="#images/<%= currentPage-1 %>">&larr; Previous</a></li>
+		<li class="previous"><a class="serverprevious" href="<%= currentPage-1 %>">&larr; Previous</a></li>
 	<% } else { %>
 		<li class="previous disabled"><a href="#">&larr; Previous</a></li>
 	<% } %>
 	<% if (currentPage < totalPages-1) { %>
-		<li class="next"><a class="servernext" href="#images/<%= currentPage+1 %>">&rarr; Next</a></li>
+		<li class="next"><a class="servernext" href="<%= currentPage+1 %>">&rarr; Next</a></li>
 	<% } else { %>
 		<li class="next disabled"><a href="#">&rarr; Next</a></li>
 	<% } %>

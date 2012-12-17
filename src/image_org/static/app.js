@@ -29,6 +29,7 @@ window.ImageCollection = Backbone.Paginator.requestPager.extend({
 	},
 	parse: function(obj) {
 		this.totalPages = Math.ceil(obj.total / this.perPage);
+		this.totalRecords = obj.total;
 		return obj.images;
 	}
 });
@@ -44,15 +45,17 @@ window.ImageListView = Backbone.View.extend({
 	},
 	nextPage: function(e) {
 		e.preventDefault();
-		console.log("nextPage");
-		this.model.requestNextPage({add: false});
+		app.navigate("images/" + (this.model.currentPage + 1));
+		this.model.goTo(this.model.currentPage + 1);
 	},
 	previousPage: function(e) {
 		e.preventDefault();
-		this.model.requestPreviousPage({add: false});
+		app.navigate("images/" + (this.model.currentPage - 1));
+		this.model.goTo(this.model.currentPage - 1);
 	},
 	pagerTemplate: _.template($('#tpl-pager').html()),
 	render: function(eventName) {
+		this.$el.html('');
 		_.each(_.partition(this.model.models, 4), function(images) {
 			listElement = $('<ul class="thumbnails"></ul>').appendTo(this.$el)
 			_.each(images, function(image) {
@@ -81,16 +84,20 @@ var AppRouter = Backbone.Router.extend({
 	routes: {
 		"images/:page": "list"
 	},
+	imageList: null,
+	imageListView: null,
 	list: function(page) {
-		// TODO define once outside the function?
-		this.imageList = new ImageCollection();
-		this.imageListView = new ImageListView({model: this.imageList});
+		
+		if (this.imageList == null) {
+			this.imageList = new ImageCollection();
+			this.imageListView = new ImageListView({model: this.imageList})
+		}
 		this.imageList.goTo(page);
 		$('#content').html(this.imageListView.render().el);
 	}
 });
 
-var app = new AppRouter();
-Backbone.history.start(); //({pushState: true, root: "/site/app/"});
-app.navigate("images/0");
+window.app = new AppRouter();
+Backbone.history.start({pushState: true, root: "/site/app/"});
+app.navigate("images/0", {trigger: true, replace: true});
 });
