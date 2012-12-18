@@ -1,6 +1,7 @@
 import rawes, re
 from datetime import datetime
 from dateutil import tz
+from contracts import contract
 
 def range_query(field, _from, to):
     return {'range': {field: {'from': _from, 'to': to}}}
@@ -17,9 +18,11 @@ class ImageDao:
         self.es = rawes.Elastic(**rawes_params)
         self.indexname = indexname
 
+    @contract(rawes_result='dict', returns='dict(str: *)')
     def map_search_results(self, rawes_result):
         return [dict(store_key=hit['_id'], **hit['_source']) for hit in rawes_result['hits']['hits']]
 
+    @contract(data='dict(str: *)', offset='int,>=0', length='int,>=1', returns='dict(str: *)')
     def search(self, data, offset, length, additional_params=None):
         # todo merge paging with additional_params
         res = self.es.get('%s/image/_search' % (self.indexname), data=data, params={'from': offset, 'size': length})
@@ -32,9 +35,15 @@ class ImageDao:
             return None
         return dict(store_key=store_key, **res['_source'])
 
-    def create(self, upload_group, store_key, original_filename):
+    @contract(upload_group='str[>0]')
+    def create(self, upload_group, store_key, original_filename=None, **properties):
         check_store_key(store_key)
         self.es.put("%s/image/%s" % (self.indexname, store_key),
-                    data={'original_filename': original_filename,
-                          'upload_group': upload_group,
-                          'created_at': datetime.now(tz.gettz())})
+                    data=dict(original_filename=original_filename,
+                              upload_group=upload_group,
+                              created_at=datetime.now(tz.gettz()),
+                              **properties))
+
+    def delete(self, store_key):
+        check_store_key(store_key)
+        self.es.delete("%s/image/%s" % (self.indexname, store_key))
