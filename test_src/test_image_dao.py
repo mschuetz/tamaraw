@@ -5,7 +5,7 @@ import time
 import uuid
 from contracts.interface import ContractNotRespected
 
-class TestLocalStore(unittest.TestCase):
+class TestImageDao(unittest.TestCase):
     def setUp(self):
         self.indexname = "test_dao%s" % (time.time())
         self.dao = ImageDao({}, self.indexname)
