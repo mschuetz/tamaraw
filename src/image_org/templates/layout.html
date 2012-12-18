@@ -72,13 +72,11 @@
 {{ caller() }}
 <ul class="pager">
 	{% if prev_offset is defined %}
-		<!--<li class="previous"><a href="{{ url_for(paging_target, offset=prev_offset) }}">&larr; Previous</a></li>-->
 		<li class="previous"><a href="{{prev_offset}}">&larr; Previous</a></li>
 	{% else %}
 		<li class="previous disabled"><a href="#">&larr; Previous</a></li>
 	{% endif %}
 	{% if next_offset is defined %}
-		<!-- <li class="next"><a href="{{ url_for(paging_target, offset=next_offset) }}">&rarr; Next</a></li> -->
 		<li class="next"><a href="./{{next_offset}}">&rarr; Next</a></li>
 	{% else %}
 		<li class="next disabled"><a href="#">&rarr; Next</a></li>

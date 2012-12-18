@@ -57,14 +57,16 @@ class ImageDao:
         self.es = rawes.Elastic(**rawes_params)
         self.indexname = indexname
 
-    @contract(rawes_result='dict(str: *)', returns='dict(unicode: *)')
+    @contract(rawes_result='dict(unicode: *)', returns='list')
     def map_search_results(self, rawes_result):
         return [dict(store_key=hit['_id'], **hit['_source']) for hit in rawes_result['hits']['hits']]
 
-    @contract(data='dict(str: *)', offset='int,>=0', length='int,>=1', returns='dict(unicode: *)')
+    @contract(data='dict(str: *)', offset='int,>=0', length='int,>=1')
     def search(self, data, offset, length, additional_params=None):
         # todo merge paging with additional_params
         res = self.es.get('%s/image/_search' % (self.indexname), data=data, params={'from': offset, 'size': length})
+        if not res.has_key('hits') or res['hits']['total'] == 0:
+            return [], 0
         return self.map_search_results(res), int(res['hits']['total'])
 
     def get(self, store_key):
@@ -74,7 +76,7 @@ class ImageDao:
             return None
         return dict(store_key=store_key, **res['_source'])
 
-    @contract(upload_group='str[>0]')
+    #@contract(upload_group='str[>0]')
     def create(self, upload_group, store_key, original_filename=None, **properties):
         check_store_key(store_key)
         self.es.put("%s/image/%s" % (self.indexname, store_key),

@@ -85,7 +85,8 @@ class LocalStore:
             resize(image, size, False, out)
 
     def deliver_image(self, key, size=None):
-        if not re.match('^[_0-9a-zA-Z]+$', key):
+        if not re.match('^[_\-0-9a-zA-Z]+$', key):
+            log.info('invalid store key')
             abort(404)
         if size != None:
             path = self.thumbnail_path(key, size)

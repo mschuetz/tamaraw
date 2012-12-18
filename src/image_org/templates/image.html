@@ -17,7 +17,7 @@
 	</div>
 </div>
 <div class="thumbnail">
-	<h3>{{image.title}}</h3>
+	<h3>{{image['prop$title']}}</h3>
 	<img src="{{ url_for('get_image', store_key=image.store_key, x=800, y=600) }}"/>
 	<p>uploaded {{ image.created_at }}</p>
 </div>
