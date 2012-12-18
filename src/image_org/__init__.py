@@ -89,7 +89,7 @@ def render_image_list(images, template_name, page_size, offset, has_more):
             params['prev_offset'] = prev_offset
         else: 
             params['prev_offset'] = 0
-    return render_template('recent.html', **params)
+    return render_template(template_name, **params)
 
 def allowed_file(filename):
     return '.' in filename and \
