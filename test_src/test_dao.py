@@ -1,6 +1,5 @@
 import unittest
-from StringIO import StringIO
-from image_org.dao import *
+from image_org.dao import * #@UnusedWildImport
 from image_org.store import unique_id
 import time
 import uuid

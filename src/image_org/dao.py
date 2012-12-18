@@ -18,7 +18,7 @@ class ImageDao:
         self.es = rawes.Elastic(**rawes_params)
         self.indexname = indexname
 
-    @contract(rawes_result='dict', returns='dict(str: *)')
+    @contract(rawes_result='dict(str: *)', returns='dict(str: *)')
     def map_search_results(self, rawes_result):
         return [dict(store_key=hit['_id'], **hit['_source']) for hit in rawes_result['hits']['hits']]
 
