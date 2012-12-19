@@ -185,7 +185,6 @@ def quick_search():
     prop_config = config_dao.get_property_config()
     fields = [prop['key'] for prop in prop_config]
     images, total = image_dao.search({'query': {'multi_match': {'query': query, 'fields': fields}}}, 0, 10)
-    print images
     return render_template('search.html', images=images, next_offset=0, prev_offset=0)
 
 @app.route('/site/<template>/<path:more>')

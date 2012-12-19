@@ -65,7 +65,6 @@ class ImageDao:
     @contract(data='dict(str: *)', offset='int,>=0', length='int,>=1')
     def search(self, data, offset, length, additional_params=None):
         # todo merge paging with additional_params
-        print data
         res = self.es.get('%s/image/_search' % (self.indexname), data=data, params={'from': offset, 'size': length})
         if not res.has_key('hits') or res['hits']['total'] == 0:
             return [], 0
