@@ -16,14 +16,15 @@ elif config['store'] == 'local':
 else:
     raise Exception('no store backend configured, must be s3 or local')
 
-image_dao = dao.ImageDao(config['elasticsearch']['rawes'], config['elasticsearch']['indexname'])
+dao_conf = [config['elasticsearch']['rawes'], config['elasticsearch']['indexname']]
+image_dao = dao.ImageDao(*dao_conf)
+config_dao = dao.ConfigDao(*dao_conf)
 
 UPLOAD_FOLDER = '/tmp'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask('image_org')
 app.config['SECRET_KEY'] = 'ohchohyaqu3imiew4oLahgh4oMa3Shae'
-
 
 @app.teardown_request
 def teardown_request(exception):
@@ -136,6 +137,35 @@ def image_page(store_key):
     except dao.InvalidStoreKey:
         app.logger.warning('invalid store_key %s', repr(store_key))
         abort(400)
+
+@app.route('/site/image/<store_key>/edit', methods=['POST'])
+def save_image(store_key):
+    image = image_dao.get(store_key)
+    prop_config = config_dao.get_property_config()
+    for prop in prop_config:
+        key = prop['key']
+        image[key] = request.form[key]
+    image_dao.put(store_key, image)
+    return redirect(url_for('image_page', store_key=store_key))
+
+@app.route('/site/image/<store_key>/edit')
+def edit_image(store_key):
+    image = image_dao.get(store_key)
+    if image == None:
+        abort(404)
+    prop_config = config_dao.get_property_config()
+    view_props = []
+    language = config['language']
+    for prop in prop_config:
+        this_view_prop = {'key': prop['key'], 'human_name': prop['human_' + language]}
+        view_props.append(this_view_prop)
+        if image.has_key(prop['key']):
+            this_view_prop['value'] = image[prop['key']]
+            this_view_prop['placeholder'] = ''
+        else:
+            this_view_prop['value'] = ''
+            this_view_prop['placeholder'] = this_view_prop['human_name']
+    return render_template('edit.html', view_props=view_props, store_key=store_key)
 
 @app.route('/site/<template>/<path:more>')
 @app.route('/site/<template>/')

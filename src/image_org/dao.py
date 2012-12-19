@@ -14,14 +14,15 @@ def check_store_key(store_key):
         raise InvalidStoreKey()
 
 class ConfigDao:
-    DEFAULT_PROPS = {u"prop$title": {u"de": u"Kurztitel", u"default": True},
-                     u"prop$source": {u"de": u"Quelle", u"default": True},
-                     u"prop$master": {u"de": u"Vorlage", u"default": True},
-                     u"prop$description": {u"de": u"Bildbeschreibung", u"default": True},
-                     u"prop$source_description": {u"de": u"Originalbildunterschrift", u"default": True},
-                     u"prop$creation_year": {u"de": u"Aufnahmejahr", u"default": True},
-                     u"prop$location": {u"de": u"Aufnahmeort", u"default": True},
-                     u"prop$tags": {u"de": u"Sachbegriffe", u"default": True}}
+    DEFAULT_PROPS = [
+                     {u"key": u"prop_title", u"human_de": u"Kurztitel", u"default": True},
+                     {u"key": u"prop_source", u"human_de": u"Quelle", u"default": True},
+                     {u"key": u"prop_master", u"human_de": u"Vorlage", u"default": True},
+                     {u"key": u"prop_description", u"human_de": u"Bildbeschreibung", u"default": True},
+                     {u"key": u"prop_source_description", u"human_de": u"Originalbildunterschrift", u"default": True},
+                     {u"key": u"prop_creation_year", u"human_de": u"Aufnahmejahr", u"default": True},
+                     {u"key": u"prop_location", u"human_de": u"Aufnahmeort", u"default": True},
+                     {u"key": u"prop_tags", u"human_de": u"Sachbegriffe", u"default": True}]
 
     def __init__(self, rawes_params, indexname):
         self.es = rawes.Elastic(**rawes_params)
@@ -35,13 +36,13 @@ class ConfigDao:
         res = self.es.get(self.config_path())
         if res.has_key('exists') and res['exists']:
             raise Exception("property config must not exist yet")
-        self.es.put(self.config_path(), data=ConfigDao.DEFAULT_PROPS)
+        self.update_property_config(ConfigDao.DEFAULT_PROPS)
     
-    @contract(config='dict(str: *)')
+    @contract(config='list')
     def update_property_config(self, config):
-        self.es.put(self.config_path(), data=config)
+        self.es.put(self.config_path(), data={'obj': config})
     
-    @contract(returns='dict(unicode: *)')    
+#    @contract(returns='dict(unicode: *)')
     def get_property_config(self):
         if self.property_config != None:
             return self.property_config
@@ -50,7 +51,7 @@ class ConfigDao:
             self.import_default_props()
             return ConfigDao.DEFAULT_PROPS
         else:
-            return res['_source']
+            return res['_source']['obj']
 
 class ImageDao:
     def __init__(self, rawes_params, indexname):
@@ -84,6 +85,13 @@ class ImageDao:
                               upload_group=upload_group,
                               created_at=datetime.now(tz.gettz()),
                               **properties))
+
+    def put(self, store_key, image):
+        check_store_key(store_key)
+        image_without_store_key = dict(**image)
+        if image.has_key('store_key'):
+            del image_without_store_key['store_key']
+        self.es.put("%s/image/%s" % (self.indexname, store_key), data=image_without_store_key)
 
     def delete(self, store_key):
         check_store_key(store_key)
