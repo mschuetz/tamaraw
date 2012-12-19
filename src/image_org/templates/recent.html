@@ -8,15 +8,18 @@
 				<a href="/site/recent">Recent Images</a>
 			</li>
 			<li>
-				<a href="#">Search</a>
+				<a href="/site/search">Extended Search</a>
 			</li>
 			<li>
 				<a href="/site/upload">Upload</a>
 			</li>
+			<form class="navbar-search pull-right" method="get" action="{{ url_for('quick_search') }}">
+				<input type="text" class="search-query" name="query" placeholder="Quick Search">
+			</form>
 		</ul>
 	</div>
 </div>
 <div>
-{% call image_list(images, 'recent_images', prev_offset, next_offset) %}{%endcall%}
+	{% call image_list(images, 'recent_images', prev_offset, next_offset) %}{%endcall%}
 </div>
 {% endblock %}
