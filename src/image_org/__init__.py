@@ -6,7 +6,12 @@ from image_org.store import S3Store, LocalStore
 from datetime import datetime
 from dateutil import tz
 
-with open(os.environ['HOME'] + '/.image_org.conf') as f:
+if os.environ.has_key('IMAGE_DB_CONFIG'):
+    config_file = os.environ['IMAGE_DB_CONFIG']
+else:
+    config_file = os.environ['HOME'] + '/.image_org.conf'
+ 
+with open(config_file) as f:
     config = json.load(f)
 
 if config['store'] == 's3':
@@ -25,11 +30,6 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask('image_org')
 app.config['SECRET_KEY'] = 'ohchohyaqu3imiew4oLahgh4oMa3Shae'
-
-@app.teardown_request
-def teardown_request(exception):
-    if hasattr(g, 'cursor'):
-        g.cursor.close()
 
 def linkify_image(image):
     return dict(href=url_for('get_image', store_key=image['store_key']), **image)
