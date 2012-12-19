@@ -16,10 +16,33 @@
 		</ul>
 	</div>
 </div>
-<div class="thumbnail">
-	<h3>{{image.prop_title}}</h3>
-	<img src="{{ url_for('get_image', store_key=image.store_key, x=800, y=600) }}"/>
-	<p>uploaded {{ image.created_at }}</p>
-	<a href="{{url_for('edit_image', store_key=image.store_key)}}"><button class="btn btn-primary">Edit</button></a>
+
+<h3>{{image.prop_title}}</h3>
+<div class="row">
+	<div class="span6">
+		<dl class="dl-horizontal">
+			{% for prop in view_props %}
+			<dt>
+				{{prop.human_name}}
+			</dt>
+			<dd>
+				{{prop.value}}
+			</dd>
+			{% endfor %}
+		</dl>
+		<a href="{{url_for('edit_image', store_key=image.store_key)}}">
+		<button class="btn btn-primary">
+			Edit
+		</button></a>
+
+	</div>
+	<div class="span6">
+		<div class="thumbnail">
+			<img src="{{ url_for('get_image', store_key=image.store_key, x=640, y=480) }}"/>
+			<p>
+				uploaded {{ image.created_at }}
+			</p>
+		</div>
+	</div>
 </div>
 {% endblock %}

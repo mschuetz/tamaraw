@@ -133,7 +133,9 @@ def image_page(store_key):
         image = image_dao.get(store_key)
         if image == None:
             abort(404)
-        return render_template('image.html', image=image)
+        prop_config = config_dao.get_property_config()
+        view_props = create_view_props(image, prop_config, set('prop_title'))
+        return render_template('image.html', image=image, view_props=view_props)
     except dao.InvalidStoreKey:
         app.logger.warning('invalid store_key %s', repr(store_key))
         abort(400)
@@ -148,15 +150,14 @@ def save_image(store_key):
     image_dao.put(store_key, image)
     return redirect(url_for('image_page', store_key=store_key))
 
-@app.route('/site/image/<store_key>/edit')
-def edit_image(store_key):
-    image = image_dao.get(store_key)
-    if image == None:
-        abort(404)
-    prop_config = config_dao.get_property_config()
+from contracts import contract
+
+def create_view_props(image, prop_config, exclude=set([])):
     view_props = []
     language = config['language']
     for prop in prop_config:
+        if prop['key'] in exclude:
+            next
         this_view_prop = {'key': prop['key'], 'human_name': prop['human_' + language]}
         view_props.append(this_view_prop)
         if image.has_key(prop['key']):
@@ -165,6 +166,15 @@ def edit_image(store_key):
         else:
             this_view_prop['value'] = ''
             this_view_prop['placeholder'] = this_view_prop['human_name']
+    return view_props
+
+@app.route('/site/image/<store_key>/edit')
+def edit_image(store_key):
+    image = image_dao.get(store_key)
+    if image == None:
+        abort(404)
+    prop_config = config_dao.get_property_config()
+    view_props = create_view_props(image, prop_config)
     return render_template('edit.html', view_props=view_props, store_key=store_key)
 
 @app.route('/site/<template>/<path:more>')
