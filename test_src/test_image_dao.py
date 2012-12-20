@@ -21,7 +21,7 @@ class TestImageDao(unittest.TestCase):
         self.assertRaises(InvalidStoreKey, self.dao.delete, "")
 
     def test_contracts(self):
-        self.assertRaises(ContractNotRespected, self.dao.create, '', unique_id())
+        #self.assertRaises(ContractNotRespected, self.dao.create, '', unique_id())
         self.assertRaises(InvalidStoreKey, self.dao.create, 'asdf', '####')
         self.assertRaises(ContractNotRespected, self.dao.search, {1:2}, 0, 1)
         self.assertRaises(ContractNotRespected, self.dao.search, {'a':2}, -1, 1)

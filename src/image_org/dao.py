@@ -42,7 +42,7 @@ class ConfigDao:
     def update_property_config(self, config):
         self.es.put(self.config_path(), data={'obj': config})
     
-#    @contract(returns='dict(unicode: *)')
+    @contract(returns='list')
     def get_property_config(self):
         if self.property_config != None:
             return self.property_config
@@ -77,6 +77,7 @@ class ImageDao:
             return None
         return dict(store_key=store_key, **res['_source'])
 
+    # TODO how cam i assure that it's either str or unicode? pycontracts doesn't know basestring
     #@contract(upload_group='str[>0]')
     def create(self, upload_group, store_key, original_filename=None, **properties):
         check_store_key(store_key)
