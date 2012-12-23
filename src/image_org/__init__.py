@@ -6,14 +6,9 @@ from image_org.store import S3Store, LocalStore
 from datetime import datetime
 from dateutil import tz
 from image_org.util import InvalidStoreKey
+from image_org.util import load_config
 
-if os.environ.has_key('IMAGE_DB_CONFIG'):
-    config_file = os.environ['IMAGE_DB_CONFIG']
-else:
-    config_file = os.environ['HOME'] + '/.image_org.conf'
- 
-with open(config_file) as f:
-    config = json.load(f)
+config = load_config()
 
 if config['store'] == 's3':
     store = S3Store(config['s3']['credentials'], config['s3']['bucket'], 'images_')
@@ -25,6 +20,7 @@ else:
 dao_conf = [config['elasticsearch']['rawes'], config['elasticsearch']['indexname']]
 image_dao = dao.ImageDao(*dao_conf)
 config_dao = dao.ConfigDao(*dao_conf)
+user_dao = dao.UserDao(*dao_conf)
 
 UPLOAD_FOLDER = '/tmp'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -215,6 +211,12 @@ def delete_image(store_key):
 @app.route('/site/<template>')
 def site(template, more=None):
     return render_template(template + '.html')
+
+@app.route('/login', methods=['POST'])
+def login():
+    
+    session['username'] = request.form['username']
+    return redirect(url_for('index'))
 
 @app.route('/')
 def start():

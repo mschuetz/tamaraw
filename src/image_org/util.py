@@ -1,4 +1,4 @@
-import re
+import re, os, json
 
 class InvalidStoreKey(Exception):
     pass
@@ -6,3 +6,12 @@ class InvalidStoreKey(Exception):
 def check_store_key(store_key):    
     if not re.match("^[0-9a-zA-Z_\-]+$", store_key):
         raise InvalidStoreKey()
+
+def load_config():
+    if os.environ.has_key('IMAGE_DB_CONFIG'):
+        config_file = os.environ['IMAGE_DB_CONFIG']
+    else:
+        config_file = os.environ['HOME'] + '/.image_org.conf'
+     
+    with open(config_file) as f:
+        return json.load(f)

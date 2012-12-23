@@ -110,5 +110,7 @@ class UserDao:
         return self.hash_algo.verify(password, res['_source']['hash'])
 
     def create_user(self, username, password):
-        self.es.put("%s/user/%s" % (self.indexname, username), data={'hash': self.hash_algo.encrypt(password)})
+        res = self.es.put("%s/user/%s" % (self.indexname, username), data={'hash': self.hash_algo.encrypt(password)})
+        if not res['ok']:
+            raise Exception(res)
 
