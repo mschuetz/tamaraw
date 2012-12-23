@@ -94,3 +94,21 @@ class ImageDao:
 
     def refresh_indices(self):
         self.es.post("%s/_refresh" % (self.indexname))
+
+class UserDao:
+    import passlib.hash
+    def __init__(self, rawes_params, indexname, hash_algo=passlib.hash.pbkdf2_sha256):
+        self.es = rawes.Elastic(**rawes_params)
+        self.indexname = indexname
+        self.hash_algo = hash_algo
+
+    def check_credentials(self, username, password):
+        res = self.es.get("%s/user/%s" % (self.indexname, username))
+        print res
+        if not res['exists']:
+            return None
+        return self.hash_algo.verify(password, res['_source']['hash'])
+
+    def create_user(self, username, password):
+        self.es.put("%s/user/%s" % (self.indexname, username), data={'hash': self.hash_algo.encrypt(password)})
+

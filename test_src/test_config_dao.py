@@ -3,7 +3,7 @@ from image_org.dao import ConfigDao
 import rawes
 import time
 
-class TestImageDao(unittest.TestCase):
+class TestConfigDao(unittest.TestCase):
     def setUp(self):
         self.indexname = "test_dao%s" % (time.time())
         self.dao = ConfigDao({}, self.indexname)
