@@ -8,10 +8,10 @@ def check_store_key(store_key):
         raise InvalidStoreKey()
 
 def load_config():
-    if os.environ.has_key('IMAGE_DB_CONFIG'):
-        config_file = os.environ['IMAGE_DB_CONFIG']
+    if os.environ.has_key('TAMARAW_CONFIG'):
+        config_file = os.environ['TAMARAW_CONFIG']
     else:
-        config_file = os.environ['HOME'] + '/.image_org.conf'
+        config_file = os.environ['HOME'] + '/.tamaraw.conf'
      
     with open(config_file) as f:
         return json.load(f)

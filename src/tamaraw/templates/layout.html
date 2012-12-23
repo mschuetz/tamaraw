@@ -44,13 +44,24 @@
 							</li>
 						</ul>
 					</div>
-					<form class="navbar-form pull-right">
-						<input name="textinput1" placeholder="Email" class="span2" type="email">
-						<input name="textinput2" placeholder="Password" class="span2" type="password">
+					{% if 'username' in session %}
+					<div class="btn-group pull-right">
+						<a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-user" /></i>&nbsp;{{session['username']}}</a>
+						<ul class="dropdown-menu">
+							<form action="{{url_for('logout')}}" method="post">
+								<button action="submit" class="btn-link">Logout</button>
+							</form>
+						</ul>
+					</div> 
+					{% else %}
+					<form class="navbar-form pull-right" action="{{url_for('login')}}" method="post">
+						<input name="username" placeholder="Username" class="span2" type="text">
+						<input name="password" placeholder="Password" class="span2" type="password">
 						<button class="btn">
-							Sign in
+							Log in
 						</button>
 					</form>
+					{% endif %}
 				</div>
 			</div>
 		</div>
@@ -61,7 +72,7 @@
  	<li class="span3">
 	<a href="{{ url_for('image_page', store_key=image.store_key) }}"> 		
 		<div class="thumbnail">
-			<img src="{{ url_for('get_image', store_key=image.store_key, x=400, y=300) }}"/>
+			<img class="img-rounded" src="{{ url_for('get_image', store_key=image.store_key, x=400, y=300) }}"/>
 			<p>{{ image.prop_title }}</p>
 		</div>
 	</a>

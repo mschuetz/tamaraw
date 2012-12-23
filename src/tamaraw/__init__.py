@@ -7,6 +7,7 @@ from datetime import datetime
 from dateutil import tz
 from util import InvalidStoreKey
 from util import load_config
+import urlparse
 
 config = load_config()
 
@@ -22,7 +23,6 @@ image_dao = dao.ImageDao(*dao_conf)
 config_dao = dao.ConfigDao(*dao_conf)
 user_dao = dao.UserDao(*dao_conf)
 
-UPLOAD_FOLDER = '/tmp'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask('tamaraw')
@@ -30,6 +30,15 @@ app.config['SECRET_KEY'] = os.urandom(32)
 
 def linkify_image(image):
     return dict(href=url_for('get_image', store_key=image['store_key']), **image)
+
+@app.before_request
+def only_get_unless_logged_in():
+    url = urlparse.urlsplit(request.url)
+    if url.path == url_for('login'):
+        return
+    if 'username' in session or request.method == 'GET':
+        return
+    abort(403)
 
 @app.route('/images/<store_key>')
 def api_get_image(store_key):
@@ -212,11 +221,23 @@ def delete_image(store_key):
 def site(template, more=None):
     return render_template(template + '.html')
 
+@app.route('/logout', methods=['POST'])
+def logout():
+    del session['username']
+    flash("logout succesful", 'alert-success')
+    return redirect(request.referrer)
+
 @app.route('/login', methods=['POST'])
 def login():
-    
-    session['username'] = request.form['username']
-    return redirect(url_for('index'))
+    username = request.form['username']
+    if user_dao.check_credentials(username, request.form['password']):
+        app.logger.info('succesful login username=%s', username)
+        session['username'] = username
+        flash("login succesful", 'alert-success')
+    else:
+        app.logger.warn('authentication error, username=%s', username)
+        flash("wrong username or password", 'alert-error')
+    return redirect(request.referrer)
 
 @app.route('/')
 def start():
