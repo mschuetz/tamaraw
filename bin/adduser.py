@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from image_org.util import load_config
-from image_org.dao import UserDao
+from tamaraw.util import load_config
+from tamaraw.dao import UserDao
 import sys
 
 if not len(sys.argv) == 3:

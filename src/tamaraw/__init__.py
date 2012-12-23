@@ -2,11 +2,11 @@ from flask import Flask, render_template, request, redirect, url_for, abort, ses
 import os, json, dao, re
 from werkzeug.utils import secure_filename
 from flask.helpers import flash
-from image_org.store import S3Store, LocalStore
+from store import S3Store, LocalStore
 from datetime import datetime
 from dateutil import tz
-from image_org.util import InvalidStoreKey
-from image_org.util import load_config
+from util import InvalidStoreKey
+from util import load_config
 
 config = load_config()
 
@@ -25,7 +25,7 @@ user_dao = dao.UserDao(*dao_conf)
 UPLOAD_FOLDER = '/tmp'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
-app = Flask('image_org')
+app = Flask('tamaraw')
 app.config['SECRET_KEY'] = os.urandom(32)
 
 def linkify_image(image):

@@ -1,7 +1,7 @@
 import unittest
-from image_org.dao import *  # @UnusedWildImport
-from image_org.store import unique_id
-from image_org.util import InvalidStoreKey
+from tamaraw.dao import *  # @UnusedWildImport
+from tamaraw.store import unique_id
+from tamaraw.util import InvalidStoreKey
 import time
 import uuid
 from contracts.interface import ContractNotRespected

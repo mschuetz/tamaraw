@@ -1,8 +1,8 @@
 import unittest
 from StringIO import StringIO
-from image_org.store import LocalStore
-from image_org.store import unique_id
-from image_org.dao import check_store_key
+from tamaraw.store import LocalStore
+from tamaraw.store import unique_id
+from tamaraw.dao import check_store_key
 
 class TestLocalStore(unittest.TestCase):
     def setUp(self):

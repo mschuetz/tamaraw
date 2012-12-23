@@ -1,5 +1,4 @@
 #!/usr/bin/env python
 
-from image_org import app
-
+from tamaraw import app
 app.run(debug=True)

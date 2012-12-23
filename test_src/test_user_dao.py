@@ -1,5 +1,5 @@
 import unittest
-from image_org.dao import UserDao
+from tamaraw.dao import UserDao
 import rawes
 import time
 
