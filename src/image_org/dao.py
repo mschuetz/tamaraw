@@ -91,3 +91,6 @@ class ImageDao:
     def delete(self, store_key):
         check_store_key(store_key)
         self.es.delete("%s/image/%s" % (self.indexname, store_key))
+
+    def refresh_indices(self):
+        self.es.post("%s/_refresh" % (self.indexname))

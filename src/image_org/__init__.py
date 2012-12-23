@@ -204,6 +204,7 @@ def delete_image(store_key):
         # if this file causes persistent errors, it should be ok to let the user remove it
         app.logger.exception("caught exception while removing file")
         flash('ignorable error while deleting file', 'alert-warning')
+    image_dao.refresh_indices()
     if 'last_collection' in session:
         return redirect(session['last_collection'])
     else:
