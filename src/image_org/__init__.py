@@ -30,7 +30,7 @@ UPLOAD_FOLDER = '/tmp'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask('image_org')
-app.config['SECRET_KEY'] = 'ohchohyaqu3imiew4oLahgh4oMa3Shae'
+app.config['SECRET_KEY'] = os.urandom(32)
 
 def linkify_image(image):
     return dict(href=url_for('get_image', store_key=image['store_key']), **image)
