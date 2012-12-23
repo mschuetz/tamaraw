@@ -1,13 +1,14 @@
-from flask import Flask, render_template, request, redirect, url_for, abort, session, Response, send_file, g, jsonify
-import os, json, dao, re
-from werkzeug.utils import secure_filename
+# encoding: utf-8
+from flask import Flask, render_template, request, redirect, url_for, abort, session, jsonify
+import os, urlparse
 from flask.helpers import flash
-from store import S3Store, LocalStore
 from datetime import datetime
 from dateutil import tz
+
+import dao
+from store import S3Store, LocalStore
 from util import InvalidStoreKey
 from util import load_config
-import urlparse
 
 config = load_config()
 
@@ -61,7 +62,7 @@ def get_image(store_key):
         x = int(request.args.get('x'))
         y = int(request.args.get('y'))
         return store.deliver_image(store_key, (x, y))
-    except Exception, e:
+    except Exception:
         # app.logger.exception('get_image')
         return store.deliver_image(store_key)
 
@@ -157,8 +158,6 @@ def save_image(store_key):
         image[key] = request.form[key]
     image_dao.put(store_key, image)
     return redirect(url_for('image_page', store_key=store_key))
-
-from contracts import contract
 
 def create_view_props(image, prop_config, exclude=set([])):
     view_props = []

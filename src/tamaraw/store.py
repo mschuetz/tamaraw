@@ -1,4 +1,5 @@
-import random, os, magic, Image, re, base64, struct, boto, time
+# encoding: utf-8
+import random, os, magic, Image, base64, struct, boto, time
 from flask import abort, redirect
 from flask.helpers import send_file
 import tempfile
@@ -90,9 +91,6 @@ class LocalStore:
 
     def deliver_image(self, key, size=None):
         check_store_key(key)
-        if not re.match('^[_\-0-9a-zA-Z]+$', key):
-            log.info('invalid store key')
-            abort(404)
         if size != None:
             path = self.thumbnail_path(key, size)
             try:

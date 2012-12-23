@@ -1,9 +1,8 @@
-import unittest
-from tamaraw.dao import *  # @UnusedWildImport
+# encoding: utf-8
+import unittest, time, uuid, rawes
+from tamaraw.dao import ImageDao
 from tamaraw.store import unique_id
 from tamaraw.util import InvalidStoreKey
-import time
-import uuid
 from contracts.interface import ContractNotRespected
 
 class TestImageDao(unittest.TestCase):

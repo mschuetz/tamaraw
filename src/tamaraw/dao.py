@@ -1,4 +1,5 @@
-import rawes, re
+# encoding: utf-8
+import rawes
 from datetime import datetime
 from dateutil import tz
 from contracts import contract

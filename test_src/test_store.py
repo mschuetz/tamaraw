@@ -1,3 +1,4 @@
+# encoding: utf-8
 import unittest
 from StringIO import StringIO
 from tamaraw.store import LocalStore

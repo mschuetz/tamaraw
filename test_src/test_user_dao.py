@@ -1,3 +1,4 @@
+# encoding: utf-8
 import unittest
 from tamaraw.dao import UserDao
 import rawes
