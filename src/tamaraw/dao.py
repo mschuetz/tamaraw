@@ -104,7 +104,6 @@ class UserDao:
 
     def check_credentials(self, username, password):
         res = self.es.get("%s/user/%s" % (self.indexname, username))
-        print res
         if not res['exists']:
             return None
         return self.hash_algo.verify(password, res['_source']['hash'])
