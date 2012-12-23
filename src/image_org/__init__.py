@@ -204,7 +204,7 @@ def delete_image(store_key):
         app.logger.exception("caught exception while removing file")
         flash('ignorable error while deleting file', 'alert-warning')
     if 'last_collection' in session:
-        return redirect(session['last_collection'], 200)
+        return redirect(session['last_collection'])
     else:
         return redirect(url_for('recent_images', offset=0))
 
