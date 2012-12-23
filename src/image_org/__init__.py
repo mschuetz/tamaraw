@@ -5,6 +5,7 @@ from flask.helpers import flash
 from image_org.store import S3Store, LocalStore
 from datetime import datetime
 from dateutil import tz
+from image_org.util import InvalidStoreKey
 
 if os.environ.has_key('IMAGE_DB_CONFIG'):
     config_file = os.environ['IMAGE_DB_CONFIG']
@@ -63,6 +64,7 @@ def get_image(store_key):
 @app.route('/site/recent/', defaults={'offset': 0})
 @app.route('/site/recent/<int:offset>')
 def recent_images(offset):
+    session['last_collection'] = "/site/recent/%s" % (offset,)
     page_size = request.args.get('page_size') or 8
     images, total = image_dao.search({'query': dao.range_query('created_at', datetime.fromtimestamp(0, tz.gettz()), datetime.now(tz.gettz())),
                                          'sort': {'created_at': {'order': 'desc'}}},
@@ -73,6 +75,7 @@ def recent_images(offset):
 @app.route('/site/upload_group/<upload_group>/', defaults={'offset': 0})
 @app.route('/site/upload_group/<upload_group>/<int:offset>')
 def upload_group(upload_group, offset):
+    session['last_collection'] = "/site/upload_group/%s/%s" % (upload_group, offset)
     page_size = request.args.get('page_size') or 8
     images, total = image_dao.search({'query': {'match': {'upload_group': upload_group}},
                                          'sort': {'created_at': {'order': 'desc'}}},
@@ -112,7 +115,7 @@ def upload_file(upload_group):
                     image_dao.create(upload_group, store_key, file.filename)
                 except Exception as e:
                     app.logger.exception('caught exception while persisting new image to database, removing from store')
-                    store.remove(store_key)
+                    store.delete(store_key)
                     raise e
                 app.logger.info('image with store_key %s persisted in database', store_key)
                 status = 200
@@ -186,6 +189,24 @@ def quick_search():
     fields = [prop['key'] for prop in prop_config]
     images, total = image_dao.search({'query': {'multi_match': {'query': query, 'fields': fields}}}, 0, 10)
     return render_template('search.html', images=images, next_offset=0, prev_offset=0)
+
+@app.route('/site/delete_image/<store_key>', methods=['POST'])
+def delete_image(store_key):
+    try:
+        image_dao.delete(store_key)
+        store.delete(store_key)
+        flash('successfully deleted file', 'alert-success')
+    except InvalidStoreKey:
+        app.logger.warning("invalid store key %s" , repr(store_key))
+        abort(400)
+    except OSError:
+        # if this file causes persistent errors, it should be ok to let the user remove it
+        app.logger.exception("caught exception while removing file")
+        flash('ignorable error while deleting file', 'alert-warning')
+    if 'last_collection' in session:
+        return redirect(session['last_collection'], 200)
+    else:
+        return redirect(url_for('recent_images', offset=0))
 
 @app.route('/site/<template>/<path:more>')
 @app.route('/site/<template>/')

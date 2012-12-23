@@ -2,6 +2,7 @@ import random, os, magic, Image, re, base64, struct, boto, time
 from flask import abort, redirect
 from flask.helpers import send_file
 import tempfile
+from util import check_store_key
 
 def unique_id():
     return base64.urlsafe_b64encode(struct.pack('fHH', time.time(), os.getpid() % 65536, random.randint(0, 65535))).replace('=', '_')
@@ -14,14 +15,14 @@ def resize(img, box, fit, out, quality=75):
     @param fix: boolean - crop the image to fill the box
     @param out: file-like-object - save the image into the output stream
     '''
-    #preresize image with factor 2, 4, 8 and fast algorithm
+    # preresize image with factor 2, 4, 8 and fast algorithm
     factor = 1
     while img.size[0] / factor > 2 * box[0] and img.size[1] * 2 / factor > 2 * box[1]:
         factor *= 2
     if factor > 1:
         img.thumbnail((img.size[0] / factor, img.size[1] / factor), Image.NEAREST)
 
-    #calculate the cropping box and get the cropped part
+    # calculate the cropping box and get the cropped part
     if fit:
         x1 = y1 = 0
         x2, y2 = img.size
@@ -35,10 +36,10 @@ def resize(img, box, fit, out, quality=75):
             x2 = int(x2 / 2 + box[0] * hRatio / 2)
         img = img.crop((x1, y1, x2, y2))
 
-    #Resize the image with best quality algorithm ANTI-ALIAS
+    # Resize the image with best quality algorithm ANTI-ALIAS
     img.thumbnail(box, Image.ANTIALIAS)
 
-    #save it into a file-like object
+    # save it into a file-like object
     img.save(out, "JPEG", quality=quality)
 
 class StoreError (StandardError):
@@ -59,7 +60,7 @@ class Store:
     def deliver_image(self, key, size):
         raise NotImplementedError
 
-    def remove(self, key):
+    def delete(self, key):
         raise NotImplementedError
 
 class LocalStore:
@@ -74,17 +75,21 @@ class LocalStore:
         return key
 
     def thumbnail_path(self, key, size):
+        check_store_key(key)
         return self.root + '/' + key + ('_%sx%s' % (size))
 
     def path(self, key):
+        check_store_key(key)
         return self.root + '/' + key
 
     def create_thumbnail(self, key, size):
+        check_store_key(key)
         image = Image.open(self.path(key))
         with open(self.thumbnail_path(key, size), 'w') as out:
             resize(image, size, False, out)
 
     def deliver_image(self, key, size=None):
+        check_store_key(key)
         if not re.match('^[_\-0-9a-zA-Z]+$', key):
             log.info('invalid store key')
             abort(404)
@@ -101,7 +106,8 @@ class LocalStore:
     def deliver_file(self, path):
         return send_file(path, magic.from_file(path))
 
-    def remove(self, key):
+    def delete(self, key):
+        check_store_key(key)
         os.remove(self.path(key))
 
 def create_upload_group():
@@ -159,5 +165,5 @@ class S3Store (Store):
         key.set_contents_from_file(fp)
         return key_name
 
-    def remove(self, key):
+    def delete(self, key):
         self.s3.get_key(self.prefix + key).delete()

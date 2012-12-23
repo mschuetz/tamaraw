@@ -59,12 +59,12 @@
 <ul class="thumbnails">
 	{% for image in row %}
  	<li class="span3">
-	<div class="thumbnail">
-		<a href="{{ url_for('image_page', store_key=image.store_key) }}">
+	<a href="{{ url_for('image_page', store_key=image.store_key) }}"> 		
+		<div class="thumbnail">
 			<img src="{{ url_for('get_image', store_key=image.store_key, x=400, y=300) }}"/>
-		</a>
-		<p>{{ image.prop_title }}</p>
-	</div>
+			<p>{{ image.prop_title }}</p>
+		</div>
+	</a>
 	</li>
 	{% endfor %}
 </ul>
@@ -84,12 +84,25 @@
 </ul>
 {% endmacro %}
 		<div class="container-fluid">
-				{% block body %}{% endblock %}
-				<hr>
-				<div>
-					© CK 2012
-				</div>
+			{% with messages = get_flashed_messages(with_categories=true) %}
+			{% if messages %}
+			
+			{% for category, message in messages %}
+			
+			<div class="alert {{category}}">
+				<button type="button" class="close" data-dismiss="alert"> × </button>
+				{{message}}
+			</div>
+			{% endfor %}
+			{% endif %}
+			{% endwith %}
 
+			{% block body %}{% endblock %}
+			<hr>
+
+			<div>
+				© CK 2012
+			</div>
 		</div>
 		<script src="{{url_for('static', filename='vendor/bootstrap/js/bootstrap.min.js') }}"></script>
 		

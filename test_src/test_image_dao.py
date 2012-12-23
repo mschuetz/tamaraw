@@ -1,6 +1,7 @@
 import unittest
-from image_org.dao import * #@UnusedWildImport
+from image_org.dao import *  # @UnusedWildImport
 from image_org.store import unique_id
+from image_org.util import InvalidStoreKey
 import time
 import uuid
 from contracts.interface import ContractNotRespected
@@ -21,7 +22,7 @@ class TestImageDao(unittest.TestCase):
         self.assertRaises(InvalidStoreKey, self.dao.delete, "")
 
     def test_contracts(self):
-        #self.assertRaises(ContractNotRespected, self.dao.create, '', unique_id())
+        # self.assertRaises(ContractNotRespected, self.dao.create, '', unique_id())
         self.assertRaises(InvalidStoreKey, self.dao.create, 'asdf', '####')
         self.assertRaises(ContractNotRespected, self.dao.search, {1:2}, 0, 1)
         self.assertRaises(ContractNotRespected, self.dao.search, {'a':2}, -1, 1)

@@ -13,10 +13,29 @@
 			<li>
 				<a href="/site/upload">Upload</a>
 			</li>
-		<form class="navbar-search pull-right" method="get" action="{{ url_for('quick_search') }}">
-			<input type="text" class="search-query" name="query" placeholder="Quick Search">
-		</form>
+			<form class="navbar-search pull-right" method="get" action="{{ url_for('quick_search') }}">
+				<input type="text" class="search-query" name="query" placeholder="Quick Search">
+			</form>
 		</ul>
+	</div>
+</div>
+
+<div id="deleteDialog" class="modal hide fade">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+			&times;
+		</button>
+		<h3>Really delete?</h3>
+	</div>
+	<div class="modal-footer">
+		<button class="btn" data-dismiss="modal" aria-hidden="true">
+			Close
+		</button>
+		<form method="post" action="{{url_for('delete_image', store_key=image.store_key)}}" class="span1">
+			<button class="btn btn-danger" type="submit">
+				Delete
+			</button>
+		</form>
 	</div>
 </div>
 
@@ -29,17 +48,16 @@
 				{{prop.human_name}}
 			</dt>
 			<dd>
-				{{prop.value}}
+				{{prop.value or "&nbsp;"|safe}}
 			</dd>
 			{% endfor %}
 		</dl>
-		<a href="{{url_for('edit_image', store_key=image.store_key)}}" class="btn btn-primary">
-			Edit
-		</a>
+		<a href="{{url_for('edit_image', store_key=image.store_key)}}" class="btn btn-primary span1"> Edit </a>
+		<a href="#deleteDialog" data-toggle="modal" class="span1 btn btn-danger"> Delete </a>
 	</div>
 	<div class="span6">
 		<div class="thumbnail">
-			<img src="{{ url_for('get_image', store_key=image.store_key, x=640, y=480) }}"/>
+			<a title="Original" href="{{ url_for('get_image', store_key=image.store_key) }}"> <img src="{{ url_for('get_image', store_key=image.store_key, x=640, y=480) }}"/> </a>
 			<p>
 				uploaded {{ image.created_at }}
 			</p>

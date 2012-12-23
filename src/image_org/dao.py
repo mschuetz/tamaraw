@@ -2,16 +2,10 @@ import rawes, re
 from datetime import datetime
 from dateutil import tz
 from contracts import contract
+from util import check_store_key
 
 def range_query(field, _from, to):
     return {'range': {field: {'from': _from, 'to': to}}}
-
-class InvalidStoreKey(Exception):
-    pass
-
-def check_store_key(store_key):    
-    if not re.match("^[0-9a-zA-Z_\-]+$", store_key):
-        raise InvalidStoreKey()
 
 class ConfigDao:
     DEFAULT_PROPS = [
@@ -78,7 +72,7 @@ class ImageDao:
         return dict(store_key=store_key, **res['_source'])
 
     # TODO how cam i assure that it's either str or unicode? pycontracts doesn't know basestring
-    #@contract(upload_group='str[>0]')
+    # @contract(upload_group='str[>0]')
     def create(self, upload_group, store_key, original_filename=None, **properties):
         check_store_key(store_key)
         self.es.put("%s/image/%s" % (self.indexname, store_key),
