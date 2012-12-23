@@ -196,6 +196,7 @@ def delete_image(store_key):
         image_dao.delete(store_key)
         store.delete(store_key)
         flash('successfully deleted file', 'alert-success')
+        app.logger.info('deleted image with store key %s', store_key)
     except InvalidStoreKey:
         app.logger.warning("invalid store key %s" , repr(store_key))
         abort(400)
