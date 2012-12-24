@@ -35,7 +35,7 @@ def linkify_image(image):
 @app.before_request
 def only_get_unless_logged_in():
     url = urlparse.urlsplit(request.url)
-    if url.path == url_for('login'):
+    if url.path in (url_for('login'), url_for('logout')):
         return
     if 'username' in session or request.method == 'GET':
         return
@@ -107,33 +107,37 @@ def allowed_file(filename):
 
 import uuid, sys
 
-@app.route('/site/upload', defaults={'upload_group': None}, methods=['GET'])
+@app.route('/site/upload', methods=['GET'])
+def upload_page():
+    if 'username' not in session:
+        flash('you need to be logged in to upload files', 'alert-warning')
+    return render_template('upload.html', upload_group=uuid.uuid4())
+
 @app.route('/site/upload/<upload_group>', methods=['POST'])
 def upload_file(upload_group):
     status = 500
-    if request.method == 'POST':
-        try:
-            file = request.files['file']
-            if file.filename and allowed_file(file.filename):
-                store_key = store.save(file)
-                app.logger.info('saved file under store_key %s', store_key)
-                try:
-                    image_dao.create(upload_group, store_key, file.filename)
-                except Exception as e:
-                    app.logger.exception('caught exception while persisting new image to database, removing from store')
-                    store.delete(store_key)
-                    raise e
-                app.logger.info('image with store_key %s persisted in database', store_key)
-                status = 200
-                flash('successfully uploaded file', 'alert-success')
-            else:
-                status = 400
-                app.logger.warning('invalid filename: %s', repr(file.filename))
-                flash('invalid file', 'alert-error')
-        except:
-            status = 500
-            app.logger.exception('error during upload')
-            flash('encountered an exception during upload ' + str(sys.exc_info()[0]), 'alert-error')
+    try:
+        file = request.files['file']
+        if file.filename and allowed_file(file.filename):
+            store_key = store.save(file)
+            app.logger.info('saved file under store_key %s', store_key)
+            try:
+                image_dao.create(upload_group, store_key, file.filename)
+            except Exception as e:
+                app.logger.exception('caught exception while persisting new image to database, removing from store')
+                store.delete(store_key)
+                raise e
+            app.logger.info('image with store_key %s persisted in database', store_key)
+            status = 200
+            flash('successfully uploaded file', 'alert-success')
+        else:
+            status = 400
+            app.logger.warning('invalid filename: %s', repr(file.filename))
+            flash('invalid file', 'alert-error')
+    except:
+        status = 500
+        app.logger.exception('error during upload')
+        flash('encountered an exception during upload ' + str(sys.exc_info()[0]), 'alert-error')
     return render_template('upload.html', upload_group=uuid.uuid4()), status
 
 @app.route('/site/image/<store_key>')
@@ -222,7 +226,8 @@ def site(template, more=None):
 
 @app.route('/logout', methods=['POST'])
 def logout():
-    del session['username']
+    if 'username' in session:
+        del session['username']
     flash("logout succesful", 'alert-success')
     return redirect(request.referrer)
 
