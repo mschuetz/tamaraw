@@ -1,24 +1,8 @@
 {% extends "layout.html" %}
 {% block body %}
-<div class="navbar">
-	<div class="navbar-inner">
-		<!--<a class="brand" href="#">Title</a>-->
-		<ul class="nav">
-			<li>
-				<a href="{{ url_for('recent_images')}}">Recent Images</a>
-			</li>
-			<li>
-				<a href="#">Search</a>
-			</li>
-			<li class="active">
-				<a href="/site/upload">Upload</a>
-			</li>
-		</ul>
-	</div>
-</div>
-<div>
-	
-{% call image_list(images, 'upload_group', prev_offset, next_offset) %}{%endcall%}
+{% call db_navbar('upload') %}{%endcall%}
 
+<div>
+{% call image_list(images, 'upload_group', prev_offset, next_offset) %}{%endcall%}
 </div>
 {% endblock %}

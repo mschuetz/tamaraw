@@ -41,12 +41,12 @@ def only_get_unless_logged_in():
         return
     abort(403)
 
-@app.route('/images/<store_key>')
+@app.route('/api/images/<store_key>')
 def api_get_image(store_key):
     return jsonify(linkify_image(image_dao.get(store_key)))
 
-@app.route('/images/')
-@app.route('/images')
+@app.route('/api/images/')
+@app.route('/api/images')
 def api_list_images():
     offset = int(request.args.get('offset') or 0)
     length = int(request.args.get('length') or 100)
@@ -56,7 +56,7 @@ def api_list_images():
 
     return jsonify(total=total, images=[linkify_image(image) for image in images])
 
-@app.route('/images/<store_key>/file')
+@app.route('/files/<store_key>')
 def get_image(store_key):
     try:
         x = int(request.args.get('x'))
@@ -67,10 +67,10 @@ def get_image(store_key):
         return store.deliver_image(store_key)
 
 # the accompanying website
-@app.route('/site/recent/', defaults={'offset': 0})
-@app.route('/site/recent/<int:offset>')
+@app.route('/recent/', defaults={'offset': 0})
+@app.route('/recent/<int:offset>')
 def recent_images(offset):
-    session['last_collection'] = "/site/recent/%s" % (offset,)
+    session['last_collection'] = "/recent/%s" % (offset,)
     page_size = request.args.get('page_size') or 8
     images, total = image_dao.search({'query': dao.range_query('created_at', datetime.fromtimestamp(0, tz.gettz()), datetime.now(tz.gettz())),
                                          'sort': {'created_at': {'order': 'desc'}}},
@@ -78,10 +78,10 @@ def recent_images(offset):
     has_more = total > (offset + page_size)
     return render_image_list(images, 'recent.html', page_size, offset, has_more)
 
-@app.route('/site/upload_group/<upload_group>/', defaults={'offset': 0})
-@app.route('/site/upload_group/<upload_group>/<int:offset>')
+@app.route('/upload_group/<upload_group>/', defaults={'offset': 0})
+@app.route('/upload_group/<upload_group>/<int:offset>')
 def upload_group(upload_group, offset):
-    session['last_collection'] = "/site/upload_group/%s/%s" % (upload_group, offset)
+    session['last_collection'] = "/upload_group/%s/%s" % (upload_group, offset)
     page_size = request.args.get('page_size') or 8
     images, total = image_dao.search({'query': {'match': {'upload_group': upload_group}},
                                          'sort': {'created_at': {'order': 'desc'}}},
@@ -107,13 +107,13 @@ def allowed_file(filename):
 
 import uuid, sys
 
-@app.route('/site/upload', methods=['GET'])
+@app.route('/upload', methods=['GET'])
 def upload_page():
     if 'username' not in session:
         flash('you need to be logged in to upload files', 'alert-warning')
     return render_template('upload.html', upload_group=uuid.uuid4())
 
-@app.route('/site/upload/<upload_group>', methods=['POST'])
+@app.route('/upload/<upload_group>', methods=['POST'])
 def upload_file(upload_group):
     status = 500
     try:
@@ -140,7 +140,7 @@ def upload_file(upload_group):
         flash('encountered an exception during upload ' + str(sys.exc_info()[0]), 'alert-error')
     return render_template('upload.html', upload_group=uuid.uuid4()), status
 
-@app.route('/site/image/<store_key>')
+@app.route('/image/<store_key>')
 def image_page(store_key):
     try:
         image = image_dao.get(store_key)
@@ -153,7 +153,7 @@ def image_page(store_key):
         app.logger.warning('invalid store_key %s', repr(store_key))
         abort(400)
 
-@app.route('/site/image/<store_key>/edit', methods=['POST'])
+@app.route('/image/<store_key>/edit', methods=['POST'])
 def save_image(store_key):
     image = image_dao.get(store_key)
     prop_config = config_dao.get_property_config()
@@ -179,7 +179,7 @@ def create_view_props(image, prop_config, exclude=set([])):
             this_view_prop['placeholder'] = this_view_prop['human_name']
     return view_props
 
-@app.route('/site/image/<store_key>/edit')
+@app.route('/image/<store_key>/edit')
 def edit_image(store_key):
     image = image_dao.get(store_key)
     if image == None:
@@ -188,7 +188,7 @@ def edit_image(store_key):
     view_props = create_view_props(image, prop_config)
     return render_template('edit.html', view_props=view_props, store_key=store_key)
 
-@app.route('/site/search')
+@app.route('/search')
 def quick_search():
     query = request.args.get('query')
     if query == None:
@@ -198,7 +198,7 @@ def quick_search():
     images, total = image_dao.search({'query': {'multi_match': {'query': query, 'fields': fields}}}, 0, 10)
     return render_template('search.html', images=images, next_offset=0, prev_offset=0)
 
-@app.route('/site/delete_image/<store_key>', methods=['POST'])
+@app.route('/delete_image/<store_key>', methods=['POST'])
 def delete_image(store_key):
     try:
         image_dao.delete(store_key)
@@ -218,9 +218,9 @@ def delete_image(store_key):
     else:
         return redirect(url_for('recent_images', offset=0))
 
-@app.route('/site/<template>/<path:more>')
-@app.route('/site/<template>/')
-@app.route('/site/<template>')
+@app.route('/<template>/<path:more>')
+@app.route('/<template>/')
+@app.route('/<template>')
 def site(template, more=None):
     return render_template(template + '.html')
 

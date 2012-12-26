@@ -6,22 +6,9 @@
 <!-- Load plupload and all it's runtimes and finally the jQuery queue widget -->
 <script type="text/javascript" src="{{url_for('static', filename='vendor/plupload/plupload.full.js')}}"></script>
 <script type="text/javascript" src="{{url_for('static', filename='vendor/plupload/jquery.plupload.queue/jquery.plupload.queue.js')}}"></script>
-<div class="navbar">
-	<div class="navbar-inner">
-		<!--<a class="brand" href="#">Title</a>-->
-		<ul class="nav">
-			<li>
-				<a href="/site/recent">Recent Images</a>
-			</li>
-			<li>
-				<a href="#">Search</a>
-			</li>
-			<li class="active">
-				<a href="/site/upload">Upload</a>
-			</li>
-		</ul>
-	</div>
-</div>
+
+{% call db_navbar('upload') %}{%endcall%}
+
 
 <div id="upload-alert" class="alert hide">
 	<button type="button" class="close" data-dismiss="alert"> × </button>
