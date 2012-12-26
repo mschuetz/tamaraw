@@ -47,8 +47,7 @@ $(function() {
         
         init: {
         	UploadComplete: function(uploader, files){
-	        	show_alert("success", "Upload successful. <a href='/site/upload_group/{{upload_group}}'>Edit properties</a>.");
-	        	
+	        	show_alert("success", "Upload successful. <a href='{{url_for('upload_group', upload_group=upload_group)}}'>Edit properties</a>.");
         	},
         	Error: function(up, args) {
         		show_alert("error", "Upload unsuccessful. " + args);
