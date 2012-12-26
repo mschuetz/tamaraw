@@ -14,14 +14,14 @@
 </style>
 
 <script type="text/javascript">
-var _next_index=null;
+var _next_index={};
 function add_list_element(target, prop_key, placeholder, next_index) {
-	if (_next_index == null)
-		_next_index = next_index;
-	var id = '' + prop_key + _next_index;
+	if (_next_index[target] == null)
+		_next_index[target] = next_index;
+	var id = '' + prop_key + _next_index[target];
 	$(target).append('<li class="hide" id="li_' + id +'"><input type="text" name="' + id + '" id="' + id + '" placeholder="' + placeholder + '" value=""></li>')
 	$('#li_' + id).slideDown('fast');
-	_next_index++;
+	_next_index[target]++;
 }
 </script>
 
