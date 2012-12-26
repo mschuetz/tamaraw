@@ -20,8 +20,8 @@ else:
     raise Exception('no store backend configured, must be s3 or local')
 
 dao_conf = [config['elasticsearch']['rawes'], config['elasticsearch']['indexname']]
-image_dao = dao.ImageDao(*dao_conf)
 config_dao = dao.ConfigDao(*dao_conf)
+image_dao = dao.ImageDao(*dao_conf)
 user_dao = dao.UserDao(*dao_conf)
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -149,7 +149,7 @@ def image_page(store_key):
         prop_config = config_dao.get_property_config()
         view_props = create_view_props(image, prop_config, set('prop_title'))
         return render_template('image.html', image=image, view_props=view_props)
-    except dao.InvalidStoreKey:
+    except InvalidStoreKey:
         app.logger.warning('invalid store_key %s', repr(store_key))
         abort(400)
 
@@ -169,13 +169,19 @@ def create_view_props(image, prop_config, exclude=set([])):
     for prop in prop_config:
         if prop['key'] in exclude:
             next
-        this_view_prop = {'key': prop['key'], 'human_name': prop['human_' + language]}
+        this_view_prop = {'key': prop['key'], 'human_name': prop['human_' + language], 'type': prop['type']}
         view_props.append(this_view_prop)
         if image.has_key(prop['key']):
-            this_view_prop['value'] = image[prop['key']]
+            if prop['type'] == 'array' and type(prop['value']) != 'list':
+                this_view_prop['value'] = [image[prop['key']]]
+            else:
+                this_view_prop['value'] = image[prop['key']]
             this_view_prop['placeholder'] = ''
         else:
-            this_view_prop['value'] = ''
+            if prop['type'] == 'array':
+                this_view_prop['value'] = []
+            else:
+                this_view_prop['value'] = ''
             this_view_prop['placeholder'] = this_view_prop['human_name']
     return view_props
 

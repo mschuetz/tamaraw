@@ -30,7 +30,15 @@
 				{{prop.human_name}}
 			</dt>
 			<dd>
-				{{prop.value or "&nbsp;"|safe}}
+				{% if prop.type=='array' %}
+					<ul>
+					{% for item in prop.value %}
+						<li>{{item}}</li>
+					{% endfor %}
+					</ul>
+				{% else %}
+					{{prop.value or "&nbsp;"|safe}}
+				{% endif %}
 			</dd>
 			{% endfor %}
 		</dl>

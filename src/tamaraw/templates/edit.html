@@ -2,13 +2,47 @@
 {% block body %}
 {% call db_navbar('') %}{%endcall%}
 
+<style>
+	.property_list {
+		list-style-type: none;
+		margin-left: 0px;
+		margin-bottom: 0.5em;
+	}
+	.property_list li {
+		margin-bottom: 0.25em;
+	}
+</style>
+
+<script type="text/javascript">
+var _next_index=null;
+function add_list_element(target, prop_key, placeholder, next_index) {
+	if (_next_index == null)
+		_next_index = next_index;
+	var id = '' + prop_key + _next_index;
+	$(target).append('<li class="hide" id="li_' + id +'"><input type="text" name="' + id + '" id="' + id + '" placeholder="' + placeholder + '" value=""></li>')
+	$('#li_' + id).slideDown('fast');
+	_next_index++;
+}
+</script>
+
 <div class="row">
 <form class="form-horizontal span6" method="post"  action="{{url_for('save_image', store_key=store_key)}}">
 	{% for prop in view_props %}
 	<div class="control-group">
 		<label class="control-label" for="{{prop.key}}">{{prop.human_name}}</label>
-		<div class="controls">
-			<input type="text" name="{{prop.key}}" id="{{prop.key}}" placeholder="{{prop.placeholder}}" value="{{prop.value}}">
+		<div class="controls" id="{{prop.key}}">
+			{% if prop.type=='array' %}
+				<ul id="{{prop.key}}_list" class="property_list">
+				{% for idx, item in prop.value %}
+				<li>
+					<input type="text" name="{{prop.key}}{{idx}}" id="{{prop.key}}{{idx}}" placeholder="{{prop.placeholder}}" value="{{item}}">
+				</li>	
+				{% endfor %}
+				</ul>
+				<a href="#" class="btn btn-small" onclick="add_list_element('#{{prop.key}}_list', '{{prop.key}}', '{{prop.placeholder}}', {{prop.value|count}});">+</a>
+			{% else %}
+				<input type="text" name="{{prop.key}}" id="{{prop.key}}" placeholder="{{prop.placeholder}}" value="{{prop.value}}">
+			{% endif %}
 		</div>
 	</div>
 	{% endfor %}

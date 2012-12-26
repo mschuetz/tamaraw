@@ -9,16 +9,17 @@ def range_query(field, _from, to):
     return {'range': {field: {'from': _from, 'to': to}}}
 
 class ConfigDao:
-    DEFAULT_PROPS = [
-                     {u"key": u"prop_title", u"human_de": u"Kurztitel", u"default": True},
-                     {u"key": u"prop_source", u"human_de": u"Quelle", u"default": True},
-                     {u"key": u"prop_master", u"human_de": u"Vorlage", u"default": True},
-                     {u"key": u"prop_description", u"human_de": u"Bildbeschreibung", u"default": True},
-                     {u"key": u"prop_source_description", u"human_de": u"Originalbildunterschrift", u"default": True},
-                     {u"key": u"prop_creation_year", u"human_de": u"Aufnahmejahr", u"default": True},
-                     {u"key": u"prop_location", u"human_de": u"Aufnahmeort", u"default": True},
-                     {u"key": u"prop_tags", u"human_de": u"Sachbegriffe", u"default": True}]
 
+    DEFAULT_PROPS = [
+                     {u"key": u"prop_title", u"human_de": u"Kurztitel", u"default": True, u"type": 'string'},
+                     {u"key": u"prop_source", u"human_de": u"Quelle", u"default": True, u"type": 'string'},
+                     {u"key": u"prop_master", u"human_de": u"Vorlage", u"default": True, u"type": 'string'},
+                     {u"key": u"prop_description", u"human_de": u"Bildbeschreibung", u"default": True, u"type": 'string'},
+                     {u"key": u"prop_source_description", u"human_de": u"Originalbildunterschrift", u"default": True, u"type": 'string'},
+                     {u"key": u"prop_creation_year", u"human_de": u"Aufnahmejahr", u"default": True, u"type": 'integer'},
+                     {u"key": u"prop_location", u"human_de": u"Aufnahmeort", u"default": True, u"type": 'string'},
+                     {u"key": u"prop_tags", u"human_de": u"Sachbegriffe", u"default": True, u"type": 'array'}]
+    
     def __init__(self, rawes_params, indexname):
         self.es = rawes.Elastic(**rawes_params)
         self.indexname = indexname
