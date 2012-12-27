@@ -79,7 +79,7 @@ def recent_images(offset):
     return render_image_list(images, 'recent.html', page_size, offset, has_more)
 
 @app.route('/upload_group/<upload_group>/', defaults={'offset': 0})
-@app.route('/upload_group/<upload_group>/<int:offset>')
+@app.route('/upload_group/<upload_group>/o<int:offset>')
 def upload_group(upload_group, offset):
     session['last_collection'] = "/upload_group/%s/%s" % (upload_group, offset)
     page_size = request.args.get('page_size') or 8
