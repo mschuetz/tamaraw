@@ -8,9 +8,18 @@ function add_list_element(target, prop_key, placeholder, next_index) {
 	if (_next_index[target] == null)
 		_next_index[target] = next_index;
 	var id = '' + prop_key + _next_index[target];
-	$(target).append('<li class="hide" id="li_' + id +'"><input type="text" name="' + id + '" id="' + id + '" placeholder="' + placeholder + '" value=""></li>')
+	$(target).append('<li class="hide" id="li_' + id +'">'
+		+ '<input type="text" name="' + id + '" id="' + id + '" placeholder="' + placeholder + '" value="">'
+		+ '&nbsp;<a href="#" class="btn btn-small" onclick="remove_list_element(\'#li_' + id + '\')">-</a></li>');
 	$('#li_' + id).slideDown('fast');
 	_next_index[target]++;
+}
+
+function remove_list_element(target) {
+	var el = $(target);
+	el.slideUp('fast', function() {
+		el.remove();
+	});
 }
 </script>
 
@@ -23,8 +32,9 @@ function add_list_element(target, prop_key, placeholder, next_index) {
 			{% if prop.type=='array' %}
 				<ul id="{{prop.key}}_list" class="property_list">
 				{% for item in prop.value %}
-				<li>
+				<li id="li_{{prop.key}}{{loop.index-1}}">
 					<input type="text" name="{{prop.key}}{{loop.index-1}}" id="{{prop.key}}{{loop.index-1}}" placeholder="{{prop.placeholder}}" value="{{item}}">
+					<a href="#" class="btn btn-small" onclick="remove_list_element('#li_{{prop.key}}{{loop.index-1}}')">-</a>
 				</li>	
 				{% endfor %}
 				</ul>
