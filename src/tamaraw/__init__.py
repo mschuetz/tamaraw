@@ -68,7 +68,7 @@ def get_image(store_key):
 
 # the accompanying website
 @app.route('/recent/', defaults={'offset': 0})
-@app.route('/recent/<int:offset>')
+@app.route('/recent/o<int:offset>')
 def recent_images(offset):
     session['last_collection'] = "/recent/%s" % (offset,)
     page_size = request.args.get('page_size') or 8
@@ -208,7 +208,7 @@ def quick_search():
     images, total = image_dao.search({'query': {'multi_match': {'query': query, 'fields': fields}}}, 0, 10)
     return render_template('search.html', images=images, next_offset=0, prev_offset=0)
 
-@app.route('/delete_image/<store_key>', methods=['POST'])
+@app.route('/image/<store_key>/delete', methods=['POST'])
 def delete_image(store_key):
     try:
         image_dao.delete(store_key)
