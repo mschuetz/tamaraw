@@ -159,21 +159,26 @@ def save_image(store_key):
     prop_config = config_dao.get_property_config()
     for prop in prop_config:
         key = prop['key']
+        # need to iterate over array elements first because their actual key does not exist in the form
+        # so it would collide with l171 where I set a property to None if the form doesn't contain the key/is empty
         if prop['type'] == 'array':
             image[key] = []
             for i in xrange(0, 100):
                 arr_key = key + str(i)
                 if arr_key in request.form:
                     image[key].append(request.form[arr_key])
-        elif prop['type'] == 'integer':
-            try:
-                image[key] = int(request.form[key])
-            except ValueError:
-                flash('%s must be of type %s' % (prop['human_' + config['language']], prop['type']), 'alert-error')
-                view_props = create_view_props(image, prop_config)
-                return render_template('edit.html', view_props=view_props, store_key=store_key)
         else:
-            image[key] = request.form[key]
+            if key not in request.form or request.form[key] == '':
+                image[key] = None
+            elif prop['type'] == 'integer':
+                try:
+                    image[key] = int(request.form[key])
+                except ValueError:
+                    flash('%s must be of type %s' % (prop['human_' + config['language']], prop['type']), 'alert-error')
+                    view_props = create_view_props(image, prop_config)
+                    return render_template('edit.html', view_props=view_props, store_key=store_key)
+            else:
+                image[key] = request.form[key]
     image_dao.put(store_key, image)
     return redirect(url_for('image_page', store_key=store_key))
 
@@ -186,7 +191,7 @@ def create_view_props(image, prop_config, exclude=set([])):
         this_view_prop = {'key': prop['key'], 'human_name': prop['human_' + language], 'type': prop['type']}
         view_props.append(this_view_prop)
         if image.has_key(prop['key']):
-            this_view_prop['value'] = image[prop['key']]
+            this_view_prop['value'] = image[prop['key']] or ''
             this_view_prop['placeholder'] = ''
         else:
             if prop['type'] == 'array':
