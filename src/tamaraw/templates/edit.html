@@ -22,9 +22,9 @@ function add_list_element(target, prop_key, placeholder, next_index) {
 		<div class="controls" id="{{prop.key}}">
 			{% if prop.type=='array' %}
 				<ul id="{{prop.key}}_list" class="property_list">
-				{% for idx, item in prop.value %}
+				{% for item in prop.value %}
 				<li>
-					<input type="text" name="{{prop.key}}{{idx}}" id="{{prop.key}}{{idx}}" placeholder="{{prop.placeholder}}" value="{{item}}">
+					<input type="text" name="{{prop.key}}{{loop.index-1}}" id="{{prop.key}}{{loop.index-1}}" placeholder="{{prop.placeholder}}" value="{{item}}">
 				</li>	
 				{% endfor %}
 				</ul>
