@@ -159,14 +159,21 @@ def save_image(store_key):
     prop_config = config_dao.get_property_config()
     for prop in prop_config:
         key = prop['key']
-        if prop['type'] != 'array':
-            image[key] = request.form[key]
-        else:
+        if prop['type'] == 'array':
             image[key] = []
             for i in xrange(0, 100):
                 arr_key = key + str(i)
                 if arr_key in request.form:
                     image[key].append(request.form[arr_key])
+        elif prop['type'] == 'integer':
+            try:
+                image[key] = int(request.form[key])
+            except ValueError:
+                flash('%s must be of type %s' % (prop['human_' + config['language']], prop['type']), 'alert-error')
+                view_props = create_view_props(image, prop_config)
+                return render_template('edit.html', view_props=view_props, store_key=store_key)
+        else:
+            image[key] = request.form[key]
     image_dao.put(store_key, image)
     return redirect(url_for('image_page', store_key=store_key))
 
