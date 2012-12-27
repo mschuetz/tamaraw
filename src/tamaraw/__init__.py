@@ -155,6 +155,7 @@ def image_page(store_key):
 
 @app.route('/image/<store_key>/edit', methods=['POST'])
 def save_image(store_key):
+    return_to_edit = False
     image = image_dao.get(store_key)
     prop_config = config_dao.get_property_config()
     for prop in prop_config:
@@ -175,12 +176,15 @@ def save_image(store_key):
                     image[key] = int(request.form[key])
                 except ValueError:
                     flash('%s must be of type %s' % (prop['human_' + config['language']], prop['type']), 'alert-error')
-                    view_props = create_view_props(image, prop_config)
-                    return render_template('edit.html', view_props=view_props, store_key=store_key)
+                    return_to_edit = True
             else:
                 image[key] = request.form[key]
-    image_dao.put(store_key, image)
-    return redirect(url_for('image_page', store_key=store_key))
+    if return_to_edit:
+        view_props = create_view_props(image, prop_config)
+        return render_template('edit.html', view_props=view_props, store_key=store_key)
+    else:
+        image_dao.put(store_key, image)
+        return redirect(url_for('image_page', store_key=store_key))
 
 def create_view_props(image, prop_config, exclude=set([])):
     view_props = []
