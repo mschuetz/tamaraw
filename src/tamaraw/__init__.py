@@ -198,15 +198,18 @@ def edit_image(store_key):
     view_props = create_view_props(image, prop_config)
     return render_template('edit.html', view_props=view_props, store_key=store_key)
 
-@app.route('/search')
-def quick_search():
+@app.route('/search/', defaults={'offset': 0})
+@app.route('/search/o<int:offset>')
+def quick_search(offset):
+    page_size = request.args.get('page_size') or 8
     query = request.args.get('query')
     if query == None:
         abort(400)
     prop_config = config_dao.get_property_config()
     fields = [prop['key'] for prop in prop_config]
-    images, total = image_dao.search({'query': {'multi_match': {'query': query, 'fields': fields}}}, 0, 10)
-    return render_template('search.html', images=images, next_offset=0, prev_offset=0)
+    images, total = image_dao.search({'query': {'multi_match': {'query': query, 'fields': fields}}}, offset, page_size)
+    has_more = total > (offset + page_size)
+    return render_image_list(images, 'search.html', page_size, offset, has_more)
 
 @app.route('/image/<store_key>/delete', methods=['POST'])
 def delete_image(store_key):
