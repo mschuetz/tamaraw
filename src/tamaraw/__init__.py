@@ -1,6 +1,6 @@
 # encoding: utf-8
 from flask import Flask, render_template, request, redirect, url_for, abort, session, jsonify
-import os, urlparse
+import urlparse
 from flask.helpers import flash
 from datetime import datetime
 from dateutil import tz
@@ -27,7 +27,7 @@ user_dao = dao.UserDao(*dao_conf)
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask('tamaraw')
-app.config['SECRET_KEY'] = os.urandom(32)
+app.config['SECRET_KEY'] = str(config['session_secret'])
 
 def linkify_image(image):
     return dict(href=url_for('get_image', store_key=image['store_key']), **image)
@@ -159,7 +159,14 @@ def save_image(store_key):
     prop_config = config_dao.get_property_config()
     for prop in prop_config:
         key = prop['key']
-        image[key] = request.form[key]
+        if prop['type'] != 'array':
+            image[key] = request.form[key]
+        else:
+            image[key] = []
+            for i in xrange(0, 100):
+                arr_key = key + str(i)
+                if arr_key in request.form:
+                    image[key].append(request.form[arr_key])
     image_dao.put(store_key, image)
     return redirect(url_for('image_page', store_key=store_key))
 
@@ -172,10 +179,7 @@ def create_view_props(image, prop_config, exclude=set([])):
         this_view_prop = {'key': prop['key'], 'human_name': prop['human_' + language], 'type': prop['type']}
         view_props.append(this_view_prop)
         if image.has_key(prop['key']):
-            if prop['type'] == 'array' and type(prop['value']) != 'list':
-                this_view_prop['value'] = [image[prop['key']]]
-            else:
-                this_view_prop['value'] = image[prop['key']]
+            this_view_prop['value'] = image[prop['key']]
             this_view_prop['placeholder'] = ''
         else:
             if prop['type'] == 'array':
