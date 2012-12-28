@@ -135,4 +135,5 @@ class CommentDao:
                                email=email,
                                store_key=store_key,
                                text=text,
-                               created_at=datetime.now(tz.gettz())))
+                               created_at=datetime.now(tz.gettz())),
+                               read=False)
