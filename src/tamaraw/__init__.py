@@ -33,12 +33,19 @@ app.config['SECRET_KEY'] = str(config['session_secret'])
 def linkify_image(image):
     return dict(href=url_for('get_image', store_key=image['store_key']), **image)
 
+# permissions concept:
+# mutating methods are disallowed for unauthenticated users on all resources except:
+#     * /public/*
+#     * /login & /logout
+# GET requests are allowed everywhere except if the resource starts with /private
 @app.before_request
 def only_get_unless_logged_in():
+    if 'username' in session:
+        return
     url = urlparse.urlsplit(request.url)
     if url.path in (url_for('login'), url_for('logout')) or url.path.startswith('/public'):
         return
-    if 'username' in session or request.method == 'GET':
+    if not url.path.startswith('/private') and request.method == 'GET':
         return
     abort(403)
 
