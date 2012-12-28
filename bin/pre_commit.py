@@ -22,8 +22,8 @@ CHECKS = [
         'print_filename': True,
     },
     {
-        'output': 'Checking for print statements...',
-        'command': 'grep -n print %s',
+        'output': 'Checking for forbidden words...',
+        'command': 'grep -n "\(print\|foo\|bar\|baz\|quux\)" %s',
         'match_files': ['.*\.py$'],
         'ignore_files': ['.*/test_src/.*', '.*/bin/.*', '.*pre_commit\.py'],
         'print_filename': True,

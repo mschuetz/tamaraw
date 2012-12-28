@@ -77,7 +77,6 @@ def recent_images(offset):
                                          'sort': {'created_at': {'order': 'desc'}}},
                                         offset, page_size)
     has_more = total > (offset + page_size)
-    flash('foo bar baz quux', 'alert-success');
     return render_image_list(images, 'recent.html', page_size, offset, has_more)
 
 @app.route('/upload_group/<upload_group>/', defaults={'offset': 0})
