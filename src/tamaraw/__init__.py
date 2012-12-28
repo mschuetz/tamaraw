@@ -91,6 +91,10 @@ def upload_group(upload_group, offset):
     return render_image_list(images, 'upload_group.html', int(page_size), offset, has_more)
 
 def render_image_list(images, template_name, page_size, offset, has_more):
+    for image in images:
+        for key in image:
+            if image[key] is None:
+                image[key] = ''
     params = {'images': images, 'offset': offset}
     if has_more:
         params['next_offset'] = offset + page_size
