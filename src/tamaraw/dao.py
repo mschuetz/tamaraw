@@ -49,8 +49,8 @@ class ConfigDao:
         else:
             return res['_source']['obj']
 
-@contract(rawes_result='dict(unicode: *)', returns='list')
-def map_search_results(self, rawes_result):
+@contract(rawes_result='dict(unicode: *)', returns='tuple(list, int)')
+def map_search_results(rawes_result):
     if not rawes_result.has_key('hits') or rawes_result['hits']['total'] == 0:
         return [], 0
     return [dict(store_key=hit['_id'], **hit['_source']) for hit in rawes_result['hits']['hits']], int(rawes_result['hits']['total'])
