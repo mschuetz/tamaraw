@@ -1,6 +1,7 @@
 # encoding: utf-8
 from flask import Flask, render_template, request, redirect, url_for, abort, session, jsonify
 import urlparse
+import urllib
 from flask.helpers import flash
 from datetime import datetime
 from dateutil import tz
@@ -75,8 +76,8 @@ def get_image(store_key):
         return store.deliver_image(store_key)
 
 # the accompanying website
-@app.route('/recent/', defaults={'offset': 0})
 @app.route('/recent/o<int:offset>')
+@app.route('/recent/', defaults={'offset': 0})
 def recent_images(offset):
     session['last_collection'] = "/recent/%s" % (offset,)
     page_size = request.args.get('page_size') or 8
@@ -249,6 +250,10 @@ def quick_search(offset):
 @app.route('/browse/<key>/<value>/o<int:offset>')
 def browse(key, value, offset):
     page_size = request.args.get('page_size') or 8
+    # workaround for flask bug?
+    if '%' in value:
+        value = urllib.unquote(urllib.unquote(value))
+        return redirect(url_for('browse', key=key, value=value, offset=offset))
     images, total = image_dao.search({'query': {'match': {key: {'query': value, 'operator': 'and'}}}}, offset, page_size)
     has_more = total > (offset + page_size)
     return render_image_list(images, 'search.html', page_size, offset, has_more)
