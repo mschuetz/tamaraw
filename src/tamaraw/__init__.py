@@ -21,6 +21,7 @@ else:
 
 dao_conf = [config['elasticsearch']['rawes'], config['elasticsearch']['indexname']]
 config_dao = dao.ConfigDao(*dao_conf)
+comment_dao = dao.CommentDao(*dao_conf)
 image_dao = dao.ImageDao(*dao_conf)
 user_dao = dao.UserDao(*dao_conf)
 
@@ -35,7 +36,7 @@ def linkify_image(image):
 @app.before_request
 def only_get_unless_logged_in():
     url = urlparse.urlsplit(request.url)
-    if url.path in (url_for('login'), url_for('logout')):
+    if url.path in (url_for('login'), url_for('logout')) or url.path.startswith('/public'):
         return
     if 'username' in session or request.method == 'GET':
         return
@@ -139,6 +140,12 @@ def upload_file(upload_group):
         app.logger.exception('error during upload')
         flash('encountered an exception during upload ' + str(sys.exc_info()[0]), 'alert-error')
     return render_template('upload.html', upload_group=uuid.uuid4()), status
+
+@app.route('/public/image/<store_key>/comment', methods=['POST'])
+def comment(store_key):
+    comment_dao.save(request.form['name'], request.form['email'], store_key, request.form['text'])
+    flash('your comment was submitted to the author', 'alert-success')
+    return redirect(url_for('image_page', store_key=store_key))
 
 @app.route('/image/<store_key>')
 def image_page(store_key):

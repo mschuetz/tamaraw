@@ -49,22 +49,22 @@ class ConfigDao:
         else:
             return res['_source']['obj']
 
+@contract(rawes_result='dict(unicode: *)', returns='list')
+def map_search_results(self, rawes_result):
+    if not rawes_result.has_key('hits') or rawes_result['hits']['total'] == 0:
+        return [], 0
+    return [dict(store_key=hit['_id'], **hit['_source']) for hit in rawes_result['hits']['hits']], int(rawes_result['hits']['total'])
+
 class ImageDao:
     def __init__(self, rawes_params, indexname):
         self.es = rawes.Elastic(**rawes_params)
         self.indexname = indexname
 
-    @contract(rawes_result='dict(unicode: *)', returns='list')
-    def map_search_results(self, rawes_result):
-        return [dict(store_key=hit['_id'], **hit['_source']) for hit in rawes_result['hits']['hits']]
-
     @contract(data='dict(str: *)', offset='int,>=0', length='int,>=1')
     def search(self, data, offset, length, additional_params=None):
         # todo merge paging with additional_params
         res = self.es.get('%s/image/_search' % (self.indexname), data=data, params={'from': offset, 'size': length})
-        if not res.has_key('hits') or res['hits']['total'] == 0:
-            return [], 0
-        return self.map_search_results(res), int(res['hits']['total'])
+        return map_search_results(res)
 
     def get(self, store_key):
         check_store_key(store_key)
@@ -115,3 +115,24 @@ class UserDao:
         if not res['ok']:
             raise Exception(res)
 
+class CommentDao:
+    def __init__(self, rawes_params, indexname):
+        self.es = rawes.Elastic(**rawes_params)
+        self.indexname = indexname
+
+    def get(self, store_key, offset, length):
+        check_store_key(store_key)
+        res = self.es.get('%s/comment/_search' % (self.indexname),
+                          data={'query': {'match': {'store_key': store_key}},
+                                         'sort': {'created_at': {'order': 'desc'}}},
+                          params={'from': offset, 'size': length})
+        return map_search_results(res)
+
+    def save(self, name, email, store_key, text):
+        check_store_key(store_key)
+        self.es.post("%s/comment/" % (self.indexname,),
+                     data=dict(name=name,
+                               email=email,
+                               store_key=store_key,
+                               text=text,
+                               created_at=datetime.now(tz.gettz())))

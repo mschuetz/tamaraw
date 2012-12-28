@@ -21,6 +21,30 @@
 	</div>
 </div>
 
+<div id="commentDialog" class="modal hide fade">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+			&times;
+		</button>
+		<h3>Write a comment to the author</h3>
+	</div>
+	<form method="post" action="{{url_for('comment', store_key=image.store_key)}}">
+		<div class="modal-body">
+			<p><input type="text" name="name" placeholder="Your name" value=""/></p>
+			<p><input type="email" name="email" placeholder="Your email address" value=""></p>
+			<p><textarea name="text" placeholder="Your comment" rows="10" cols="810"></textarea></p>
+		</div>
+		<div class="modal-footer">
+			<a class="btn" data-dismiss="modal" aria-hidden="true">
+				Cancel
+			</a>
+			<button class="btn btn-primary" type="submit">
+				Send
+			</button>
+		</div>
+	</form>
+</div>
+
 <h3>{{image.prop_title}}</h3>
 <div class="row">
 	<div class="span6">
@@ -46,6 +70,7 @@
 			<a href="{{url_for('edit_image', store_key=image.store_key)}}" class="btn btn-primary span1"> Edit </a>
 			<a href="#deleteDialog" data-toggle="modal" class="span1 btn btn-danger"> Delete </a>
 		{% endif %}
+		<a href="#commentDialog" data-toggle="modal" class="span1 btn"> Comment </a>
 	</div>
 	<div class="span6">
 		<div class="thumbnail">
