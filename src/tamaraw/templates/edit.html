@@ -11,7 +11,7 @@ function add_list_element(target, prop_key, placeholder, next_index) {
 	$(target).append('<li class="hide" id="li_' + id +'">'
 		+ '<input type="text" name="' + id + '" id="' + id + '" placeholder="' + placeholder + '" value="">'
 		+ '&nbsp;<a href="#" class="btn btn-small" onclick="remove_list_element(\'#li_' + id + '\')">-</a></li>');
-	$('#li_' + id).slideDown('fast');
+	$('#li_' + id).slideDown('fast').removeClass('hide');
 	_next_index[target]++;
 }
 

@@ -27,7 +27,7 @@
 	<body>
 		<script src="{{url_for('static', filename='vendor/jquery-1.8.3.min.js') }}"></script>
 		<script src="{{url_for('static', filename='vendor/underscore-min.js') }}"></script>
-		<div class="navbar navbar-fixed-top navbar-inverse">
+		<nav class="navbar navbar-fixed-top navbar-inverse">
 			<div class="navbar-inner">
 				<div class="container-fluid">
 					<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"> <span class="icon-bar"> </span> <span class="icon-bar"> </span> <span class="icon-bar"> </span> </a>
@@ -65,10 +65,10 @@
 					{% endif %}
 				</div>
 			</div>
-		</div>
+		</nav>
 
 {% macro db_navbar(active) %}
-<div class="navbar">
+<nav class="navbar">
 	<div class="navbar-inner">
 		<ul class="nav">
 			<li {% if active=='recent_images' %}class="active"{% endif %}>
@@ -87,7 +87,7 @@
 			</form>
 		</ul>
 	</div>
-</div>
+</nav>
 {{ caller() }}
 {% endmacro %}
 
@@ -126,24 +126,27 @@
 			
 			{% for category, message in messages %}
 			
-			<div class="alert {{category}}">
+			<section id="flash{{loop.index-1}}" class="alert {{category}} hide">
 				<button type="button" class="close" data-dismiss="alert"> × </button>
 				{{message}}
-			</div>
+			</section>
 			{% endfor %}
 			{% endif %}
 			{% endwith %}
 
 			{% block body %}{% endblock %}
-			<hr>
-
-			<div>
-				© CK 2012
-			</div>
 		</div>
+		<footer>
+			<hr>
+			© CK 2012
+		</footer>
 		<script src="{{url_for('static', filename='vendor/bootstrap/js/bootstrap.min.js') }}"></script>
-		
-<!--		<script src="{{url_for('static', filename='vendor/backbone-min.js') }}"></script>-->
+		<script type="application/javascript">
+			$(function(){
+				$('.alert').slideDown('fast');
+				$('.alert-success').delay(3000).slideUp('slow');
+			}());
+		</script>
 	</body>
 
 </html>
