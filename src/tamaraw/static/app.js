@@ -16,7 +16,7 @@ window.Image = Backbone.Model.extend();
 window.ImageCollection = Backbone.Paginator.requestPager.extend({
 	model: Image,
 	paginator_core: {
-		url: '/images',
+		url: '/api/images',
 		dataType: 'json'
 	},
 	paginator_ui: {
@@ -59,7 +59,7 @@ window.ImageListView = Backbone.View.extend({
 	render: function(eventName) {
 		this.$el.html('');
 		_.each(_.partition(this.model.models, 4), function(images) {
-			listElement = $('<ul class="thumbnails"></ul>').appendTo(this.$el)
+			var listElement = $('<ul class="thumbnails"></ul>').appendTo(this.$el)
 			_.each(images, function(image) {
 				listElement.append(new ImageListItemView({model: image }).render().el);
 			}, this);
@@ -100,6 +100,6 @@ var AppRouter = Backbone.Router.extend({
 });
 
 window.app = new AppRouter();
-Backbone.history.start({pushState: true, root: "/site/app/"});
+Backbone.history.start({pushState: true, root: "/app/"});
 app.navigate("images/0", {trigger: true, replace: true});
 });
