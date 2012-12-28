@@ -77,6 +77,7 @@ def recent_images(offset):
                                          'sort': {'created_at': {'order': 'desc'}}},
                                         offset, page_size)
     has_more = total > (offset + page_size)
+    flash('foo bar baz quux', 'alert-success');
     return render_image_list(images, 'recent.html', page_size, offset, has_more)
 
 @app.route('/upload_group/<upload_group>/', defaults={'offset': 0})
@@ -235,6 +236,14 @@ def quick_search(offset):
     prop_config = config_dao.get_property_config()
     fields = [prop['key'] for prop in prop_config]
     images, total = image_dao.search({'query': {'multi_match': {'query': query, 'fields': fields}}}, offset, page_size)
+    has_more = total > (offset + page_size)
+    return render_image_list(images, 'search.html', page_size, offset, has_more)
+
+@app.route('/browse/<key>/<value>/', defaults={'offset': 0})
+@app.route('/browse/<key>/<value>/o<int:offset>')
+def browse(key, value, offset):
+    page_size = request.args.get('page_size') or 8
+    images, total = image_dao.search({'query': {'match': {key: {'query': value, 'operator': 'and'}}}}, offset, page_size)
     has_more = total > (offset + page_size)
     return render_image_list(images, 'search.html', page_size, offset, has_more)
 

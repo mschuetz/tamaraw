@@ -57,11 +57,23 @@
 				{% if prop.type=='array' %}
 					<ul class="property_list">
 					{% for item in prop.value %}
-						<li>{{item}}</li>
+						<li>
+							{{item}}
+							{% if item %}
+							<a href="{{url_for('browse', key=prop.key, value=item)}}">
+								<i class="icon-search icon-gray"></i>
+							</a>
+							{% endif %}
+						</li>
 					{% endfor %}
 					</ul>
 				{% else %}
 					{{prop.value or "&nbsp;"|safe}}
+					{% if prop.value %}
+					<a href="{{url_for('browse', key=prop.key, value=prop.value)}}">
+						<i class="icon-search icon-gray "></i>
+					</a>
+					{% endif %}
 				{% endif %}
 			</dd>
 			{% endfor %}
