@@ -49,12 +49,23 @@ class ConfigDao:
         else:
             return res['_source']['obj']
 
-@contract(rawes_result='dict(unicode: *)', returns='tuple(list, int)')
+# @contract(rawes_result='dict(unicode: *)', returns='tuple(list, int, (None|dict)')
+@contract(rawes_result='dict(unicode: *)')
 def map_search_results(rawes_result):
     if not rawes_result.has_key('hits') or rawes_result['hits']['total'] == 0:
         return [], 0
-    return [dict(store_key=hit['_id'], **hit['_source']) for hit in rawes_result['hits']['hits']], int(rawes_result['hits']['total'])
-
+    hits = [dict(store_key=hit['_id'], **hit['_source']) for hit in rawes_result['hits']['hits']]
+    total = int(rawes_result['hits']['total'])
+    if 'facets' not in rawes_result:
+        return hits, total
+    facets = {}
+    for facet_key, facet in rawes_result['facets'].iteritems():
+        terms = {}
+        for term in facet['terms']:
+            terms[term['term']] = term['count']
+        facets[facet_key] = terms 
+    return hits, total, facets
+ 
 class ImageDao:
     def __init__(self, rawes_params, indexname):
         self.es = rawes.Elastic(**rawes_params)
@@ -120,6 +131,7 @@ class CommentDao:
         self.es = rawes.Elastic(**rawes_params)
         self.indexname = indexname
 
+    @contract(offset='int,>=0', length='int,>=1', returns='tuple(list, int)')
     def get(self, store_key, offset, length):
         check_store_key(store_key)
         res = self.es.get('%s/comment/_search' % (self.indexname),
