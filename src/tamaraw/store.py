@@ -165,3 +165,73 @@ class S3Store (Store):
 
     def delete(self, key):
         self.s3.get_key(self.prefix + key).delete()
+
+from simples3 import S3Bucket
+
+class SimpleS3Store(Store):
+    def __init__(self, credentials, bucket, baseurl, prefix=''):
+        self.credentials = credentials
+        self.bucket_name = bucket
+        self.prefix = prefix
+        self.baseurl = baseurl
+
+    # TODO is simples3.S3Bucket safe to re-use?
+    def bucket(self):
+        return S3Bucket(str(self.bucket_name),
+                        str(self.credentials['aws_access_key_id']),
+                        str(self.credentials['aws_secret_access_key']),
+                        str(self.baseurl)) 
+                                      
+    def thumbnail_key(self, key, size):
+        return key + ('_%sx%s' % (size))
+
+    # this is rather inefficient but it's impossible to create a PIL Image directly from an S3
+    # key as it doesn't support seeking. Therefore, the file is saved to a local temp file which
+    # is then scaled and saved to a local temp file again because boto s3 keys do not support writing. 
+    # TODO still valid with simples3?
+    def create_thumbnail(self, key, size):
+        b = self.bucket()
+        s3_key = self.prefix + key
+        thumb_s3_key = self.prefix + self.thumbnail_key(key, size)
+
+        in_tmp = tempfile.TemporaryFile()
+        in_tmp.write(b.get(s3_key).read())
+        in_tmp.seek(0)
+        try:
+            img = Image.open(in_tmp)
+            out_tmp = tempfile.TemporaryFile()
+            try:
+                resize(img, size, False, out_tmp)
+                out_tmp.seek(0)
+                b.put(thumb_s3_key, out_tmp.read())
+            finally:
+                out_tmp.close()
+        finally:
+            in_tmp.close()
+
+    def deliver_image(self, key, size=None):
+        check_store_key(key)
+        if size:
+            b = self.bucket()
+            try:
+                thumb_s3_key = self.prefix + self.thumbnail_key(key, size) 
+                b.info(thumb_s3_key)
+            except KeyError:
+                self.create_thumbnail(key, size)
+            return self.deliver_file(thumb_s3_key)
+        else:
+            return self.deliver_file(self.prefix + key)
+
+    def deliver_file(self, s3_key):
+        url = self.bucket().make_url_authed(s3_key, 3600)
+        return redirect(url, 307)
+
+    def save(self, fp):
+        key_name = unique_id()
+        b = self.bucket()
+        b.put(self.prefix + key_name, fp.read())
+        return key_name
+
+    def delete(self, key):
+        check_store_key(key)
+        self.bucket().delete(self.prefix + key)

@@ -7,7 +7,7 @@ from datetime import datetime
 from dateutil import tz
 
 import dao
-from store import S3Store, LocalStore
+from store import S3Store, LocalStore, SimpleS3Store
 from util import InvalidStoreKey
 from util import load_config
 
@@ -15,6 +15,11 @@ config = load_config()
 
 if config['store'] == 's3':
     store = S3Store(config['s3']['credentials'], config['s3']['bucket'], 'images_')
+elif config['store'] == 'simples3':
+    store = SimpleS3Store(config['simples3']['credentials'],
+                          config['simples3']['bucket'],
+                          config['simples3']['baseurl'],
+                          'images_')
 elif config['store'] == 'local':
     store = LocalStore(config['localstore']['basepath'])
 else:
