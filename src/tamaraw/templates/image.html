@@ -7,15 +7,15 @@
 		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
 			&times;
 		</button>
-		<h3>Really delete?</h3>
+		<h3>Wirklich löschen?</h3>
 	</div>
 	<div class="modal-footer">
 		<button class="btn" data-dismiss="modal" aria-hidden="true">
-			Close
+			Zurück
 		</button>
 		<form method="post" action="{{url_for('delete_image', store_key=image.store_key)}}" class="span1">
 			<button class="btn btn-danger" type="submit">
-				Delete
+				Löschen
 			</button>
 		</form>
 	</div>
@@ -26,20 +26,21 @@
 		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
 			&times;
 		</button>
-		<h3>Write a comment to the author</h3>
+		<h3>Kommentar an den Autor</h3>
 	</div>
 	<form method="post" action="{{url_for('comment', store_key=image.store_key)}}">
 		<div class="modal-body">
-			<p><input type="text" name="name" placeholder="Your name" value=""/></p>
-			<p><input type="email" name="email" placeholder="Your email address" value=""></p>
-			<p><textarea name="text" placeholder="Your comment" rows="10" cols="810"></textarea></p>
+			<p>Hinweis: Ihr Kommentar wird nicht öffentlich angezeigt und ist nur dem Autor zugänglich.</p>
+			<p><input type="text" name="name" placeholder="Name" value=""/></p>
+			<p><input type="email" name="email" placeholder="Emailadresse" value=""></p>
+			<p><textarea name="text" placeholder="Kommentar" rows="10" cols="810"></textarea></p>
 		</div>
 		<div class="modal-footer">
 			<a class="btn" data-dismiss="modal" aria-hidden="true">
-				Cancel
+				Zurück
 			</a>
 			<button class="btn btn-primary" type="submit">
-				Send
+				Absenden
 			</button>
 		</div>
 	</form>
@@ -88,7 +89,7 @@
 		<div class="thumbnail">
 			<a title="Original" href="{{ url_for('get_image', store_key=image.store_key) }}"> <img src="{{ url_for('get_image', store_key=image.store_key, x=640, y=480) }}"/> </a>
 			<p>
-				uploaded {{ image.created_at }}
+				hinzugefügt {{ image.created_at }}
 			</p>
 		</div>
 	</div>

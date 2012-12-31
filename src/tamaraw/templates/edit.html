@@ -47,14 +47,12 @@ function remove_list_element(target) {
 	{% endfor %}
 	<div class="control-group">
 		<div class="form-actions">
-			<button type="submit" class="btn btn-primary">
-				Save changes
-			</button>
-			<a href="{{ url_for('image_page', store_key=store_key) }}">
-			<button type="button" class="btn">
-				Cancel
-			</button>
+			<a href="{{ url_for('image_page', store_key=store_key) }}" class="btn">
+				Zurück
 			</a>
+			<button type="submit" class="btn btn-primary">
+				Speichern
+			</button>
 		</div>
 	</div>
 </form>
