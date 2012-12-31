@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+{% block body %}
+<script type="application/javascript">
+$(function() {
+	$('.collapse').on('shown', function(){
+		var comment_id = this.id.replace('collapse_', '');
+		var read_element = $('#read_' + comment_id);
+		if (read_element.hasClass('label-important')) {
+			var path = '{{url_for('mark_comment_as_read', comment_id='ID')}}';
+			$.post(path.replace('ID', comment_id), function(){
+				read_element.removeClass('label-important');
+				read_element.addClass('label-success');
+				read_element.html('Gelesen');
+			});
+		}
+	});
+});
+</script>
+<div class="span12">
+	<h1>Kommentare</h1>
+	<div class="span10 accordion" id="accordion">
+		{% for comment in comments %}
+		<div class="accordion-group">
+			<div class="accordion-heading">
+				{% if comment.read %}
+					<span class="label label-success" id="read_{{comment._id}}">Gelesen</span>
+				{% else %}
+					<span class="label label-important" id="read_{{comment._id}}">Ungelesen</span>
+				{% endif %}
+				{{comment.name}} &lt;{{comment.email}}&gt; (betrifft 
+				{% if comment.store_key == 'subscribe' %}
+					Emailverteiler
+				{% else %}
+					<a href="{{url_for('image_page', store_key=comment.store_key)}}">Bild {{comment.store_key}}</a>
+				{% endif %}
+				)
+				<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapse_{{comment._id}}">
+					<i class="icon icon-plus"></i>
+				</a>
+			</div>
+			<div id="collapse_{{comment._id}}" class="accordion-body collapse">
+				<div class="accordion-inner">
+					{{comment.text}}
+				</div>
+			</div>
+		</div>
+
+		{% endfor %}
+	</div>
+	{% call pager('span10') %}{%endcall%}
+</div>
+
+{% endblock %}

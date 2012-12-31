@@ -85,31 +85,37 @@ def get_image(store_key):
 @app.route('/recent/', defaults={'offset': 0})
 def recent_images(offset):
     session['last_collection'] = "/recent/%s" % (offset,)
-    page_size = request.args.get('page_size') or 8
+    page_size = get_page_size()
     images, total = image_dao.search({'query': dao.range_query('created_at', datetime.fromtimestamp(0, tz.gettz()), datetime.now(tz.gettz())),
                                          'sort': {'created_at': {'order': 'desc'}}},
                                         offset, page_size)
-    has_more = total > (offset + page_size)
-    return render_image_list(images, 'recent.html', page_size, offset, has_more)
+    return render_image_list(images, 'recent.html', offset, page_size, total)
 
 @app.route('/upload_group/<upload_group>/', defaults={'offset': 0})
 @app.route('/upload_group/<upload_group>/o<int:offset>')
 def upload_group(upload_group, offset):
     session['last_collection'] = "/upload_group/%s/%s" % (upload_group, offset)
-    page_size = request.args.get('page_size') or 8
+    page_size = get_page_size()
     images, total = image_dao.search({'query': {'match': {'upload_group': upload_group}},
                                          'sort': {'created_at': {'order': 'desc'}}},
                                         offset, page_size)
-    has_more = total > (offset + page_size)
-    return render_image_list(images, 'upload_group.html', int(page_size), offset, has_more)
+    return render_image_list(images, 'upload_group.html', offset, page_size, total)
 
-def render_image_list(images, template_name, page_size, offset, has_more):
+def get_page_size(default=8):
+    page_size = request.args.get('page_size') or default
+    return int(page_size)
+
+def render_image_list(images, template_name, offset, page_size, total):
     for image in images:
         for key in image:
             if image[key] is None:
                 image[key] = ''
-    params = {'images': images, 'offset': offset}
-    if has_more:
+    params = add_pagination_params({'images': images}, offset, page_size, total)
+    return render_template(template_name, **params)
+
+def add_pagination_params(params, offset, page_size, total):
+    params['offset'] = offset
+    if total > (offset + page_size):
         params['next_offset'] = offset + page_size
     if offset > 0:
         prev_offset = offset - page_size
@@ -117,8 +123,8 @@ def render_image_list(images, template_name, page_size, offset, has_more):
             params['prev_offset'] = prev_offset
         else: 
             params['prev_offset'] = 0
-    return render_template(template_name, **params)
-
+    return params
+    
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -241,27 +247,25 @@ def edit_image(store_key):
 @app.route('/search/', defaults={'offset': 0})
 @app.route('/search/o<int:offset>')
 def quick_search(offset):
-    page_size = request.args.get('page_size') or 8
+    page_size = get_page_size()
     query = request.args.get('query')
     if query == None:
         abort(400)
     prop_config = config_dao.get_property_config()
     fields = [prop['key'] for prop in prop_config]
     images, total = image_dao.search({'query': {'multi_match': {'query': query, 'fields': fields}}}, offset, page_size)
-    has_more = total > (offset + page_size)
-    return render_image_list(images, 'search.html', page_size, offset, has_more)
+    return render_image_list(images, 'search.html', offset, page_size, total)
 
 @app.route('/browse/<key>/<value>/', defaults={'offset': 0})
 @app.route('/browse/<key>/<value>/o<int:offset>')
 def browse(key, value, offset):
-    page_size = request.args.get('page_size') or 8
+    page_size = get_page_size()
     # workaround for flask bug?
     if '%' in value:
         value = urllib.unquote(urllib.unquote(value))
         return redirect(url_for('browse', key=key, value=value, offset=offset))
     images, total = image_dao.search({'query': {'match': {key: {'query': value, 'operator': 'and'}}}}, offset, page_size)
-    has_more = total > (offset + page_size)
-    return render_image_list(images, 'search.html', page_size, offset, has_more)
+    return render_image_list(images, 'search.html', offset, page_size, total)
 
 @app.route('/image/<store_key>/delete', methods=['POST'])
 def delete_image(store_key):
@@ -295,8 +299,23 @@ def subscribe():
     flash(u'Vielen Dank %s, wir werden sie über die Fertigstellung der Seite per Email informieren.' % (request.form['name'],),
           'alert-success')
     return redirect(url_for('start'))
+
+@app.route('/private/comment/<comment_id>/mark_as_read', methods=['POST'])
+def mark_comment_as_read(comment_id):
+    if comment_dao.mark_as_read(comment_id):
+        return '', 200
+    else:
+        abort(404)
+
+@app.route('/private/comments/', defaults={'offset': 0})
+@app.route('/private/comments/o<int:offset>')
+def comments(offset):
+    page_size = get_page_size()
+    comments, total = comment_dao.get_all(offset, page_size)
+    params = add_pagination_params({'comments': comments}, offset, page_size, total)
+    return render_template('comments.html', **params)
     
-@app.route('/logout', methods=['POST'])
+@app.route('/logout')
 def logout():
     if 'username' in session:
         del session['username']

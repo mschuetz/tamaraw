@@ -49,9 +49,13 @@
 					<div class="btn-group pull-right">
 						<a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-user" /></i>&nbsp;{{session['username']}}</a>
 						<ul class="dropdown-menu">
-							<form action="{{url_for('logout')}}" method="post">
-								<button action="submit" class="btn-link">Logout</button>
-							</form>
+							<li>
+								<a href="{{url_for('comments')}}">Kommentare</a>
+							</li>
+							<li class="divider"></li>
+							<li>
+								<a href="{{url_for('logout')}}">Logout</a>
+							</li>
 						</ul>
 					</div> 
 					{% else %}
@@ -91,6 +95,23 @@
 {{ caller() }}
 {% endmacro %}
 
+{% macro pager(classes) %}
+<ul class="pager {{classes}}">
+	{% if prev_offset is defined %}
+		<li class="previous"><a href="o{{prev_offset}}?{{request.query_string}}">&larr; Previous</a></li>
+	{% else %}
+		<li class="previous disabled"><a href="#">&larr; Previous</a></li>
+	{% endif %}
+	{% if next_offset is defined %}
+		<li class="next"><a href="./o{{next_offset}}?{{request.query_string}}">&rarr; Next</a></li>
+	{% else %}
+		<li class="next disabled"><a href="#">&rarr; Next</a></li>
+	{% endif%}
+</ul>
+{{ caller() }}
+{% endmacro %}
+
+
 {% macro image_list(images, paging_target, prev_offset, next_offset) %}
 {% for row in images|batch(4) %}
 <ul class="thumbnails">
@@ -107,18 +128,7 @@
 </ul>
 {% endfor %}
 {{ caller() }}
-<ul class="pager">
-	{% if prev_offset is defined %}
-		<li class="previous"><a href="o{{prev_offset}}?{{request.query_string}}">&larr; Previous</a></li>
-	{% else %}
-		<li class="previous disabled"><a href="#">&larr; Previous</a></li>
-	{% endif %}
-	{% if next_offset is defined %}
-		<li class="next"><a href="./o{{next_offset}}?{{request.query_string}}">&rarr; Next</a></li>
-	{% else %}
-		<li class="next disabled"><a href="#">&rarr; Next</a></li>
-	{% endif%}
-</ul>
+{% call pager('') %}{%endcall%}
 {% endmacro %}
 		<div class="container-fluid">
 			{% with messages = get_flashed_messages(with_categories=true) %}

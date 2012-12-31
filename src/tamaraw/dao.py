@@ -1,5 +1,5 @@
 # encoding: utf-8
-import rawes
+import rawes, re
 from datetime import datetime
 from dateutil import tz
 from contracts import contract
@@ -49,33 +49,33 @@ class ConfigDao:
         else:
             return res['_source']['obj']
 
-# @contract(rawes_result='dict(unicode: *)', returns='tuple(list, int, (None|dict)')
-@contract(rawes_result='dict(unicode: *)')
-def map_search_results(rawes_result):
-    if not rawes_result.has_key('hits') or rawes_result['hits']['total'] == 0:
-        return [], 0
-    hits = [dict(store_key=hit['_id'], **hit['_source']) for hit in rawes_result['hits']['hits']]
-    total = int(rawes_result['hits']['total'])
-    if 'facets' not in rawes_result:
-        return hits, total
-    facets = {}
-    for facet_key, facet in rawes_result['facets'].iteritems():
-        terms = {}
-        for term in facet['terms']:
-            terms[term['term']] = term['count']
-        facets[facet_key] = terms 
-    return hits, total, facets
- 
 class ImageDao:
     def __init__(self, rawes_params, indexname):
         self.es = rawes.Elastic(**rawes_params)
         self.indexname = indexname
 
+    # @contract(rawes_result='dict(unicode: *)', returns='tuple(list, int, (None|dict)')
+    @contract(rawes_result='dict(unicode: *)')
+    def map_search_results(self, rawes_result):
+        if not rawes_result.has_key('hits') or rawes_result['hits']['total'] == 0:
+            return [], 0
+        hits = [dict(store_key=hit['_id'], **hit['_source']) for hit in rawes_result['hits']['hits']]
+        total = int(rawes_result['hits']['total'])
+        if 'facets' not in rawes_result:
+            return hits, total
+        facets = {}
+        for facet_key, facet in rawes_result['facets'].iteritems():
+            terms = {}
+            for term in facet['terms']:
+                terms[term['term']] = term['count']
+            facets[facet_key] = terms 
+        return hits, total, facets
+
     @contract(data='dict(str: *)', offset='int,>=0', length='int,>=1')
     def search(self, data, offset, length, additional_params=None):
         # todo merge paging with additional_params
         res = self.es.get('%s/image/_search' % (self.indexname), data=data, params={'from': offset, 'size': length})
-        return map_search_results(res)
+        return self.map_search_results(res)
 
     def get(self, store_key):
         check_store_key(store_key)
@@ -126,6 +126,9 @@ class UserDao:
         if not res['ok']:
             raise Exception(res)
 
+class InvalidCommentId(Exception):
+    pass
+
 class CommentDao:
     def __init__(self, rawes_params, indexname):
         self.es = rawes.Elastic(**rawes_params)
@@ -134,11 +137,40 @@ class CommentDao:
     @contract(offset='int,>=0', length='int,>=1', returns='tuple(list, int)')
     def get(self, store_key, offset, length):
         check_store_key(store_key)
+        return self.search({'match': {'store_key': store_key}}, offset, length)
+
+    @contract(offset='int,>=0', length='int,>=1', returns='tuple(list, int)')
+    def get_all(self, offset, length):
+        return self.search({'match_all': {}}, offset, length)
+
+    @contract(query='dict(str: *)', offset='int,>=0', length='int,>=1', returns='tuple(list, int)')
+    def search(self, query, offset, length):
         res = self.es.get('%s/comment/_search' % (self.indexname),
-                          data={'query': {'match': {'store_key': store_key}},
-                                         'sort': {'created_at': {'order': 'desc'}}},
+                          data={'query': query,
+                                'sort': {'created_at': {'order': 'desc'}}},
                           params={'from': offset, 'size': length})
-        return map_search_results(res)
+        return self.map_search_results(res)
+
+    @contract(rawes_result='dict(unicode: *)')
+    def map_search_results(self, rawes_result):
+        if not rawes_result.has_key('hits') or rawes_result['hits']['total'] == 0:
+            return [], 0
+        hits = [dict(_id=hit['_id'], **hit['_source']) for hit in rawes_result['hits']['hits']]
+        total = int(rawes_result['hits']['total'])
+        return hits, total
+
+    def mark_as_read(self, comment_id):
+        if (re.match("[\.\\\/]", comment_id)):
+            raise InvalidCommentId
+        path = '%s/comment/%s' % (self.indexname, comment_id)
+        res = self.es.get(path)
+        if not res['exists']:
+            None
+        comment = res['_source']
+        if not comment['read']:
+            comment['read'] = True
+            self.es.put(path, data=comment)
+        return comment
 
     def save(self, name, email, store_key, text):
         check_store_key(store_key)
