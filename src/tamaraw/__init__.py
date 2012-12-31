@@ -289,6 +289,13 @@ def delete_image(store_key):
 def site(template, more=None):
     return render_template(template + '.html')
 
+@app.route('/public/subscribe', methods=['POST'])
+def subscribe():
+    comment_dao.save(request.form['name'], request.form['email'], 'subscribe', request.form['comment'])
+    flash(u'Vielen Dank %s, wir werden sie über die Fertigstellung der Seite per Email informieren.' % (request.form['name'],),
+          'alert-success')
+    return redirect(url_for('start'))
+    
 @app.route('/logout', methods=['POST'])
 def logout():
     if 'username' in session:

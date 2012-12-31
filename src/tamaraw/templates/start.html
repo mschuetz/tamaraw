@@ -1,18 +1,43 @@
 {% extends "layout.html" %}
 {% block body %}
+<div id="subscribeDialog" class="modal hide fade">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+			&times;
+		</button>
+		<h3>In den Emailverteiler eintragen</h3>
+	</div>
+	<form action="{{url_for('subscribe')}}" method="post">
+		<div class="modal-body">
+			<p>
+				<input type="text" placeholder="Name" name="name"/>
+			</p>
+			<p>
+				<input type="email" placeholder="Email" name="email"/>
+			</p>
+			<p>
+				<input type="text" placeholder="Kommentar (optional)" name="comment"/>
+			</p>
+		</div>
+		<div class="modal-footer">
+			<button class="btn" type="submit">
+				Absenden
+			</button>
+			<small><a href="/imprint#privacy">Datenschutzerklärung</a></small>
+		</div>
+	</form>
+</div>
+</div>
+
 <div class="hero-unit">
-<div>
-  <h1>
-    Hello, world!
-  </h1>
-  <p>
-    This is a template for a simple marketing or informational website. It
-    includes a large callout called the hero unit and three supporting pieces
-    of content. Use it as a starting point to create something more unique.
-  </p>
+	<h1> Willkomen! </h1>
+	<p>
+		Diese Seite befindet sich noch im Aufbau. Wenn Sie an historischer Rinderanspannung interessiert sind
+		und über die Fertigstellung der Seite informiert werden möchten, besteht die Möglichkeit sich in
+		unseren Emailverteiler einzutragen.
+	</p>
+	<a class="btn" data-toggle="modal" href="#subscribeDialog">In den Emailverteiler eintragen</a>
+	<a class="btn btn-primary" href="/about"> Erfahren Sie mehr » </a>
 </div>
-<a class="btn btn-primary" href="/site/about">
-  Learn more »
-</a>
-</div>
+	
 {% endblock %}
