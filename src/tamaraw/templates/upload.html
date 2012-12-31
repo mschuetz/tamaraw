@@ -63,7 +63,7 @@ $(function() {
 });
 </script>
 
-<form action="" method="post" enctype="multipart/form-data">
+<form action="{{url_for("upload_file", upload_group=upload_group)}}" method="post" enctype="multipart/form-data">
 	<div id="uploader">
 		<p>You browser doesn't have Flash, Silverlight, Gears, BrowserPlus or HTML5 support.</p>
 		<input type="file" name="file">
