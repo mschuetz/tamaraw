@@ -10,13 +10,13 @@
 	<form action="{{url_for('subscribe')}}" method="post">
 		<div class="modal-body">
 			<p>
-				<input type="text" placeholder="Name" name="name"/>
+				<input class="span6" type="text" placeholder="Name" name="name"/>
 			</p>
 			<p>
-				<input type="email" placeholder="Email" name="email"/>
+				<input class="span6" type="email" placeholder="Email" name="email"/>
 			</p>
 			<p>
-				<input type="text" placeholder="Kommentar (optional)" name="comment"/>
+				<textarea class="span6" type="text" placeholder="Kommentar (optional)" name="comment" rows="10"></textarea>
 			</p>
 		</div>
 		<div class="modal-footer">

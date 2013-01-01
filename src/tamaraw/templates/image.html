@@ -31,9 +31,9 @@
 	<form method="post" action="{{url_for('comment', store_key=image.store_key)}}">
 		<div class="modal-body">
 			<p>Hinweis: Ihr Kommentar wird nicht öffentlich angezeigt und ist nur dem Autor zugänglich.</p>
-			<p><input type="text" name="name" placeholder="Name" value=""/></p>
-			<p><input type="email" name="email" placeholder="Emailadresse" value=""></p>
-			<p><textarea name="text" placeholder="Kommentar" rows="10" cols="810"></textarea></p>
+			<p><input class="span6" type="text" name="name" placeholder="Name" value=""/></p>
+			<p><input class="span6" type="email" name="email" placeholder="Emailadresse" value=""></p>
+			<p><textarea class="span6" name="text" placeholder="Kommentar" rows="10" cols="80"></textarea></p>
 		</div>
 		<div class="modal-footer">
 			<a class="btn" data-dismiss="modal" aria-hidden="true">
