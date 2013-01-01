@@ -33,14 +33,16 @@ function remove_list_element(target) {
 				<ul id="{{prop.key}}_list" class="property_list">
 				{% for item in prop.value %}
 				<li id="li_{{prop.key}}{{loop.index-1}}">
-					<input type="text" name="{{prop.key}}{{loop.index-1}}" id="{{prop.key}}{{loop.index-1}}" placeholder="{{prop.placeholder}}" value="{{item}}">
+					<input class="span4" type="text" name="{{prop.key}}{{loop.index-1}}" id="{{prop.key}}{{loop.index-1}}" placeholder="{{prop.placeholder}}" value="{{item}}">
 					<a href="#" class="btn btn-small" onclick="remove_list_element('#li_{{prop.key}}{{loop.index-1}}')">-</a>
 				</li>	
 				{% endfor %}
 				</ul>
 				<a href="#" class="btn btn-small" onclick="add_list_element('#{{prop.key}}_list', '{{prop.key}}', '{{prop.placeholder}}', {{prop.value|count}});">+</a>
+			{% elif prop.type=='text' %}
+				<textarea class="span4" rows="6" name="{{prop.key}}" id="{{prop.key}}" placeholder="{{prop.placeholder}}">{{prop.value}}</textarea>
 			{% else %}
-				<input type="text" name="{{prop.key}}" id="{{prop.key}}" placeholder="{{prop.placeholder}}" value="{{prop.value}}">
+				<input class="span4" type="text" name="{{prop.key}}" id="{{prop.key}}" placeholder="{{prop.placeholder}}" value="{{prop.value}}">
 			{% endif %}
 		</div>
 	</div>
