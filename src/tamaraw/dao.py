@@ -4,7 +4,7 @@ from datetime import datetime
 from dateutil import tz
 from contracts import contract
 from util import check_store_key
-
+import dateutil.parser
 def range_query(field, _from, to):
     return {'range': {field: {'from': _from, 'to': to}}}
 
@@ -54,13 +54,22 @@ class ImageDao:
     def __init__(self, rawes_params, indexname):
         self.es = rawes.Elastic(**rawes_params)
         self.indexname = indexname
+        
+    def map_timestamps(self, obj):
+        for known_timestamp in ('created_at', 'updated_at'):
+            if known_timestamp in obj:
+                try:
+                    obj[known_timestamp] = dateutil.parser.parse(obj[known_timestamp])
+                except:
+                    pass
+        return obj
 
     # @contract(rawes_result='dict(unicode: *)', returns='tuple(list, int, (None|dict)')
     @contract(rawes_result='dict(unicode: *)')
     def map_search_results(self, rawes_result):
         if not rawes_result.has_key('hits') or rawes_result['hits']['total'] == 0:
             return [], 0
-        hits = [dict(store_key=hit['_id'], **hit['_source']) for hit in rawes_result['hits']['hits']]
+        hits = [dict(store_key=hit['_id'], **self.map_timestamps(hit['_source'])) for hit in rawes_result['hits']['hits']]
         total = int(rawes_result['hits']['total'])
         if 'facets' not in rawes_result:
             return hits, total
@@ -83,7 +92,7 @@ class ImageDao:
         res = self.es.get('%s/image/%s' % (self.indexname, store_key))
         if not res['exists']:
             return None
-        return dict(store_key=store_key, **res['_source'])
+        return dict(store_key=store_key, **self.map_timestamps(res['_source']))
 
     # TODO how cam i assure that it's either str or unicode? pycontracts doesn't know basestring
     # @contract(upload_group='str[>0]')
@@ -93,6 +102,7 @@ class ImageDao:
                     data=dict(original_filename=original_filename,
                               upload_group=upload_group,
                               created_at=datetime.now(tz.gettz()),
+                              updated_at=datetime.now(tz.gettz()),
                               **properties))
 
     def put(self, store_key, image):
@@ -100,6 +110,7 @@ class ImageDao:
         image_without_store_key = dict(**image)
         if image.has_key('store_key'):
             del image_without_store_key['store_key']
+        image_without_store_key['updated_at'] = datetime.now(tz.gettz())
         self.es.put("%s/image/%s" % (self.indexname, store_key), data=image_without_store_key)
 
     def delete(self, store_key):

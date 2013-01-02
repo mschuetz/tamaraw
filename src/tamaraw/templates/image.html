@@ -79,8 +79,8 @@
 			</dd>
 			{% endfor %}
 			<dt>Empfohlene Zitierweise</dt>
-			<dd>„{{image.prop_title}}, {{image.prop_location|default}}, {{image.prop_creation_year}}“,
-				in: Historische Rinderanspannung &lt;{{request.base_url}}&gt;</dd>
+			<dd>„{{image.prop_title}}{% if image.prop_location or image.prop_creation_year%}, {%endif%}{{[image.prop_location, image.prop_creation_year]|filter|join(', ')}}“
+				in: Bildarchiv Rinderanspannung &lt;{{request.base_url}}&gt; (Stand: {{(image.updated_at or image.created_at) | date_format}})</dd>
 		</dl>
 		{% if 'username' in session %}
 			<a href="{{url_for('edit_image', store_key=image.store_key)}}" class="btn btn-primary span1"> Edit </a>
@@ -92,7 +92,7 @@
 		<div class="thumbnail">
 			<a title="Original" href="{{ url_for('get_image', store_key=image.store_key) }}"> <img src="{{ url_for('get_image', store_key=image.store_key, x=640, y=480) }}"/> </a>
 			<p>
-				hinzugefügt {{ image.created_at }}
+				hinzugefügt am {{ image.created_at | date_format }}
 			</p>
 		</div>
 	</div>

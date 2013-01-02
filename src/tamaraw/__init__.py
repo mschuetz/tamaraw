@@ -36,6 +36,18 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 app = Flask('tamaraw')
 app.config['SECRET_KEY'] = str(config['session_secret'])
 
+@app.template_filter('filter')
+def template_filter(values, filter=None):
+    res = []
+    for val in values:
+        if val != filter:
+            res.append(val)
+    return res
+
+@app.template_filter('date_format')
+def template_date_format(value, format='%d.%m.%Y'):
+    return value.strftime(format)
+
 def linkify_image(image):
     return dict(href=url_for('get_image', store_key=image['store_key']), **image)
 
