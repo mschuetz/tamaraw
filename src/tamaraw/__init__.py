@@ -84,7 +84,7 @@ def get_image(store_key):
 @app.route('/recent/o<int:offset>')
 @app.route('/recent/', defaults={'offset': 0})
 def recent_images(offset):
-    session['last_collection'] = "/recent/%s" % (offset,)
+    session['last_collection'] = url_for('recent_images', offset=offset)
     page_size = get_page_size()
     images, total = image_dao.search({'query': dao.range_query('created_at', datetime.fromtimestamp(0, tz.gettz()), datetime.now(tz.gettz())),
                                          'sort': {'created_at': {'order': 'desc'}}},
@@ -94,7 +94,7 @@ def recent_images(offset):
 @app.route('/upload_group/<upload_group>/', defaults={'offset': 0})
 @app.route('/upload_group/<upload_group>/o<int:offset>')
 def upload_group(upload_group, offset):
-    session['last_collection'] = "/upload_group/%s/%s" % (upload_group, offset)
+    session['last_collection'] = url_for('upload_group', upload_group=upload_group, offset=offset)
     page_size = get_page_size()
     images, total = image_dao.search({'query': {'match': {'upload_group': upload_group}},
                                          'sort': {'created_at': {'order': 'desc'}}},
