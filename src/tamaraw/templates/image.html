@@ -78,6 +78,9 @@
 				{% endif %}
 			</dd>
 			{% endfor %}
+			<dt>Empfohlene Zitierweise</dt>
+			<dd>„{{image.prop_title}}, {{image.prop_location|default}}, {{image.prop_creation_year}}“,
+				in: Historische Rinderanspannung &lt;{{request.base_url}}&gt;</dd>
 		</dl>
 		{% if 'username' in session %}
 			<a href="{{url_for('edit_image', store_key=image.store_key)}}" class="btn btn-primary span1"> Edit </a>
