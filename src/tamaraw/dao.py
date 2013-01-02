@@ -13,6 +13,7 @@ class ConfigDao:
     DEFAULT_PROPS = [
                      {u"key": u"prop_title", u"human_de": u"Kurztitel", u"default": True, u"type": 'string'},
                      {u"key": u"prop_source", u"human_de": u"Quelle", u"default": True, u"type": 'string'},
+                     {u"key": u"prop_rights", u"human_de": u"Bildrechte", u"default": True, u"type": 'string'},
                      {u"key": u"prop_master", u"human_de": u"Vorlage", u"default": True, u"type": 'string'},
                      {u"key": u"prop_description", u"human_de": u"Bildbeschreibung", u"default": True, u"type": 'text'},
                      {u"key": u"prop_source_description", u"human_de": u"Originalbildunterschrift", u"default": True, u"type": 'text'},
