@@ -204,7 +204,8 @@ class SimpleS3Store(Store):
             try:
                 resize(img, size, False, out_tmp)
                 out_tmp.seek(0)
-                b.put(thumb_s3_key, out_tmp.read(), mimetype='image/jpeg')
+                b.put(thumb_s3_key, out_tmp.read(), mimetype='image/jpeg',
+                      headers={'Content-Disposition': 'inline; filename=%s.jpg' % (thumb_s3_key,)})
             finally:
                 out_tmp.close()
         finally:
