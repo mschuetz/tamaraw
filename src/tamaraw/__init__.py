@@ -5,6 +5,7 @@ import urllib
 from flask.helpers import flash
 from datetime import datetime
 from dateutil import tz
+from jinja2 import TemplateNotFound
 
 import dao
 from store import S3Store, LocalStore, SimpleS3Store
@@ -314,7 +315,10 @@ def delete_image(store_key):
 @app.route('/<template>/')
 @app.route('/<template>')
 def site(template, more=None):
-    return render_template(template + '.html')
+    try:
+        return render_template(template + '.html')
+    except TemplateNotFound:
+        abort(404)
 
 @app.route('/public/subscribe', methods=['POST'])
 def subscribe():
