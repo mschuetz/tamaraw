@@ -264,7 +264,18 @@ def quick_search(offset):
     if query == None:
         abort(400)
     prop_config = config_dao.get_property_config()
-    fields = [prop['key'] for prop in prop_config]
+    fields = []
+    query_is_number = True
+    try:
+        int(query)
+    except ValueError:
+        query_is_number = False
+
+    fields = []        
+    for prop in prop_config:
+        if query_is_number or prop['type'] != 'integer': 
+            fields.append(prop['key'])
+    
     images, total = image_dao.search({'query': {'multi_match': {'query': query, 'fields': fields}}}, offset, page_size)
     return render_image_list(images, 'search.html', offset, page_size, total)
 
@@ -348,4 +359,5 @@ def login():
 
 @app.route('/')
 def start():
-    return site('start')
+    images, _ = image_dao.search({'query':{'match_all': {}}}, 0, 5)
+    return render_template('start.html', demo_images=images)
