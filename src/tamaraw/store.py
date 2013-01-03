@@ -169,10 +169,11 @@ class S3Store (Store):
 from simples3 import S3Bucket
 
 class SimpleS3Store(Store):
-    def __init__(self, credentials, bucket, baseurl, prefix=''):
+    def __init__(self, credentials, bucket, baseurl, logger, prefix=''):
         self.credentials = credentials
         self.bucket_name = bucket
         self.prefix = prefix
+        self.logger = logger
         self.baseurl = baseurl
 
     # TODO is simples3.S3Bucket safe to re-use?
@@ -235,4 +236,7 @@ class SimpleS3Store(Store):
 
     def delete(self, key):
         check_store_key(key)
-        self.bucket().delete(self.prefix + key)
+        b = self.bucket()
+        for s3_key, _, _, _ in b.listdir(self.prefix + key):
+            self.logger.info('deleting s3 key %s', s3_key)
+            b.delete(s3_key)
