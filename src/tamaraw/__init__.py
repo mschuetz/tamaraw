@@ -2,6 +2,7 @@
 from flask import Flask, render_template, request, redirect, url_for, abort, session, jsonify
 import urlparse
 import urllib
+import mimetypes
 from flask.helpers import flash
 from datetime import datetime
 from dateutil import tz
@@ -156,8 +157,10 @@ def upload_file(upload_group):
     try:
         file = request.files['file']
         if file.filename and allowed_file(file.filename):
-            store_key = store.save(file)
-            app.logger.info('saved file under store_key %s', store_key)
+            # we don't always receive a mimetype via file.content_type, so derive it from the extension 
+            mimetype, _ = mimetypes.guess_type(file.filename) or 'application/octet-stream'
+            store_key = store.save(file, mimetype=mimetype)
+            app.logger.info('saved file under store_key %s with mimetype %s', store_key, mimetype)
             try:
                 image_dao.create(upload_group, store_key, file.filename)
             except Exception as e:

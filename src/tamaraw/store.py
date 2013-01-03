@@ -52,7 +52,7 @@ class NotFoundError (StoreError):
 
 class Store:
     """ return some key name """
-    def save(self, fp):
+    def save(self, fp, mimetype, filename):
         raise NotImplementedError
 
     def get(self, dest_fp):
@@ -68,7 +68,7 @@ class LocalStore:
     def __init__(self, root):
         self.root = root
 
-    def save(self, fp):
+    def save(self, fp, mimetype='application/octet-stream'):
         key = unique_id()
         filename = self.root + '/' + key
         with open(filename, 'w') as dest:
@@ -157,7 +157,7 @@ class S3Store (Store):
         else:
             abort(404)
 
-    def save(self, fp):
+    def save(self, fp, mimetype='application/octet-stream'):
         key_name = unique_id()
         key = self.s3.new_key(self.prefix + key_name)
         key.set_contents_from_file(fp)
@@ -203,7 +203,7 @@ class SimpleS3Store(Store):
             try:
                 resize(img, size, False, out_tmp)
                 out_tmp.seek(0)
-                b.put(thumb_s3_key, out_tmp.read())
+                b.put(thumb_s3_key, out_tmp.read(), mimetype='image/jpeg')
             finally:
                 out_tmp.close()
         finally:
@@ -226,10 +226,11 @@ class SimpleS3Store(Store):
         url = self.bucket().make_url_authed(s3_key, 3600)
         return redirect(url, 307)
 
-    def save(self, fp):
+    def save(self, fp, mimetype='application/octet-stream'):
         key_name = unique_id()
         b = self.bucket()
-        b.put(self.prefix + key_name, fp.read())
+        s3_key = self.prefix + key_name
+        b.put(s3_key, fp.read(), mimetype=mimetype)
         return key_name
 
     def delete(self, key):
