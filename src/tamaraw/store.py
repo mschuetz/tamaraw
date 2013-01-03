@@ -1,5 +1,5 @@
 # encoding: utf-8
-import random, os, magic, Image, base64, struct, boto, time
+import random, os, magic, Image, base64, struct, boto, time, mimetypes
 from flask import abort, redirect
 from flask.helpers import send_file
 import tempfile
@@ -229,9 +229,11 @@ class SimpleS3Store(Store):
 
     def save(self, fp, mimetype='application/octet-stream'):
         key_name = unique_id()
-        b = self.bucket()
         s3_key = self.prefix + key_name
-        b.put(s3_key, fp.read(), mimetype=mimetype)
+        # ".jpe" would have been my first choice for naming jpegs.. not
+        ext = mimetypes.guess_extension(mimetype).replace('jpe', 'jpg')
+        self.bucket().put(s3_key, fp.read(), mimetype=mimetype,
+              headers={'Content-Disposition': 'inline; filename=%s%s' % (s3_key, ext)})
         return key_name
 
     def delete(self, key):
