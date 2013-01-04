@@ -85,14 +85,12 @@ def api_list_images():
 
     return jsonify(total=total, images=[linkify_image(image) for image in images])
 
-@app.route('/files/<store_key>')
-def get_image(store_key):
-    try:
-        x = int(request.args.get('x'))
-        y = int(request.args.get('y'))
+@app.route('/files/<store_key>', defaults={'x':None, 'y':None})
+@app.route('/files/<store_key>_<int:x>x<int:y>')
+def get_image(store_key, x, y):
+    if x and y:
         return store.deliver_image(store_key, (x, y))
-    except Exception:
-        # app.logger.exception('get_image')
+    else:
         return store.deliver_image(store_key)
 
 # the accompanying website
