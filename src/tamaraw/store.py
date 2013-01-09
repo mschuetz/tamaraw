@@ -2,7 +2,6 @@
 import random, os, magic, Image, base64, struct, time, mimetypes
 from flask import redirect
 from flask.helpers import send_file
-import tempfile
 from util import check_store_key
 from simples3 import S3Bucket
 
@@ -200,8 +199,8 @@ class SimpleS3Store(Store):
         exts = ('.jpg', '.png')
         for ext in exts:
             cache_key = key_no_prefix + ext
-            if cache_key in cache:
-                return send_file(cache.path(cache_key), mimetypes.guess_type(cache_key)) 
+            if cache_key in self.cache:
+                return send_file(self.cache.path(cache_key), mimetypes.guess_type(cache_key)) 
         url = self.bucket().make_url_authed(s3_key, 3600)
         return redirect(url, 307)
 
