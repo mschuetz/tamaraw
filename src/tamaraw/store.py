@@ -109,13 +109,40 @@ class LocalStore:
         check_store_key(key)
         os.remove(self.path(key))
 
+class FileCache:
+    def __init__(self, cache_dir='/tmp/tamaraw/image_cache'):
+        self.cache_dir = cache_dir
+
+    def path(self, key):
+        return self.cache_dir + '/' + key
+    
+    def __contains__(self, key):
+        try:
+            os.stat(self.path(key))
+            return True
+        except OSError:
+            return False
+    
+    def open(self, key, mode='r'):
+        return open(self.path(key), mode)
+        
+    # the idea is to call this from a cron job
+    # this function should analyze an nginx log file and determine which
+    # images should be cached, possibly evicting seldomly requested ones
+    # and downloading additional ones which have dropped out of the cache.
+    # this is necessary because the s3 store class only fills the cache
+    # when convenient
+    def manage(self, log_file, max_size):
+        raise NotImplementedError
+
 class SimpleS3Store(Store):
-    def __init__(self, credentials, bucket, baseurl, logger, prefix=''):
+    def __init__(self, credentials, bucket, baseurl, logger, prefix, cache=FileCache()):
         self.credentials = credentials
         self.bucket_name = bucket
         self.prefix = prefix
         self.logger = logger
         self.baseurl = baseurl
+        self.cache = cache
 
     # TODO is simples3.S3Bucket safe to re-use?
     def bucket(self):
@@ -127,24 +154,25 @@ class SimpleS3Store(Store):
     def thumbnail_key(self, key, size):
         return key + ('_%sx%s' % (size))
 
-    # this is rather inefficient but it's impossible to create a PIL Image directly from an S3
-    # key as it doesn't support seeking. Therefore, the file is saved to a local temp file which
-    # is then scaled and saved to a local temp file again because boto s3 keys do not support writing. 
-    # TODO still valid with simples3?
     def create_thumbnail(self, key, size):
         b = self.bucket()
         s3_key = self.prefix + key
-        thumb_s3_key = self.prefix + self.thumbnail_key(key, size)
+        thumb_key = self.thumbnail_key(key, size)
 
-        in_tmp = tempfile.TemporaryFile()
-        in_tmp.write(b.get(s3_key).read())
-        in_tmp.seek(0)
+        if key in self.cache:
+            in_tmp = self.cache.open(key + '.jpg')
+        else:
+            # todo guess correct extension
+            in_tmp = self.cache.open(key + '.jpg', 'w+b')
+            in_tmp.write(b.get(s3_key).read())
+            in_tmp.seek(0)
         try:
             img = Image.open(in_tmp)
-            out_tmp = tempfile.TemporaryFile()
+            out_tmp = self.cache.open(thumb_key + '.jpg', 'w+b')
             try:
                 resize(img, size, False, out_tmp)
                 out_tmp.seek(0)
+                thumb_s3_key = self.prefix + thumb_key
                 b.put(thumb_s3_key, out_tmp.read(), mimetype='image/jpeg',
                       headers={'Content-Disposition': 'inline; filename=%s.jpg' % (thumb_s3_key,)})
             finally:
@@ -166,6 +194,14 @@ class SimpleS3Store(Store):
             return self.deliver_file(self.prefix + key)
 
     def deliver_file(self, s3_key):
+        # check again if it's in the cache. if a thumbnail was newly
+        # created, it is now locally available. TODO guess extension?
+        key_no_prefix = s3_key.replace(self.prefix, '')
+        exts = ('.jpg', '.png')
+        for ext in exts:
+            cache_key = key_no_prefix + ext
+            if cache_key in cache:
+                return send_file(cache.path(cache_key), mimetypes.guess_type(cache_key)) 
         url = self.bucket().make_url_authed(s3_key, 3600)
         return redirect(url, 307)
 
@@ -174,8 +210,12 @@ class SimpleS3Store(Store):
         s3_key = self.prefix + key_name
         # ".jpe" would have been my first choice for naming jpegs.. not
         ext = mimetypes.guess_extension(mimetype).replace('jpe', 'jpg')
-        self.bucket().put(s3_key, fp.read(), mimetype=mimetype,
-              headers={'Content-Disposition': 'inline; filename=%s%s' % (s3_key, ext)})
+        content = fp.read()
+        with self.cache.open(key_name + ext, 'w') as cache_file:
+            cache_file.write(content)
+        self.bucket().put(s3_key, content, mimetype=mimetype,
+              headers={'Content-Disposition': 'inline; filename=%s%s' % (s3_key, ext),
+                       'Cache-Control': 'public max-age=86400'})
         return key_name
 
     def delete(self, key):
