@@ -352,7 +352,9 @@ def logout():
 @app.route('/login', methods=['POST'])
 def login():
     username = request.form['username']
-    if user_dao.check_credentials(username, request.form['password']):
+    if not re.match('[0-9a-zA-Z\.\-_]', username):
+        flash("wrong invalid characters in username", 'alert-error')
+    elif user_dao.check_credentials(username, request.form['password']):
         app.logger.info('succesful login username=%s', username)
         session['username'] = username
         flash("login succesful", 'alert-success')
