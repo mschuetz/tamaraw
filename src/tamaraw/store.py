@@ -200,7 +200,8 @@ class SimpleS3Store(Store):
         for ext in exts:
             cache_key = key_no_prefix + ext
             if cache_key in self.cache:
-                return send_file(self.cache.path(cache_key), mimetypes.guess_type(cache_key)) 
+                mimetype, _ = mimetypes.guess_type(cache_key)
+                return send_file(self.cache.path(cache_key), mimetype) 
         url = self.bucket().make_url_authed(s3_key, 3600)
         return redirect(url, 307)
 
