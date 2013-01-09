@@ -9,7 +9,7 @@ from dateutil import tz
 from jinja2 import TemplateNotFound
 
 import dao
-from store import LocalStore, SimpleS3Store
+from store import LocalStore, SimpleS3Store, FileCache
 from util import InvalidStoreKey
 from util import load_config
 
@@ -23,7 +23,8 @@ if config['store'] == 'simples3':
                           config['simples3']['bucket'],
                           config['simples3']['baseurl'],
                           app.logger,
-                          'images_')
+                          'images_',
+                          FileCache(config['cache']['basepath']))
 elif config['store'] == 'local':
     store = LocalStore(config['localstore']['basepath'])
 else:
