@@ -29,15 +29,31 @@
 </div>
 </div>
 
-<div class="hero-unit">
+<div class="hero-unit container-fluid">
 	<h2> Willkommen beim Bilderarchiv Rinderanspannung! </h2>
-	<p>
+	<div class="row">
+	<p class="span5">
 		Diese Seite befindet sich noch im Aufbau. Wenn Sie an historischer Rinderanspannung interessiert sind
 		und über die Fertigstellung der Seite informiert werden möchten, besteht die Möglichkeit, sich in
 		unseren Emailverteiler einzutragen.
+		<a class="btn" data-toggle="modal" href="#subscribeDialog">In den Emailverteiler eintragen</a>
+		<a class="btn btn-primary" href="/about"> Erfahren Sie mehr » </a>
 	</p>
-	<a class="btn" data-toggle="modal" href="#subscribeDialog">In den Emailverteiler eintragen</a>
-	<a class="btn btn-primary" href="/about"> Erfahren Sie mehr » </a>
+	<div id="myCarousel" class="span6 carousel slide">
+		<div class="carousel-inner">
+			{% for image in demo_images %}
+			<div class="item {%if loop.first%} active {%endif%}">
+				<img src="{{ url_for('get_image', store_key=image.store_key, x=640, y=480) }}" alt="">
+				<div class="carousel-caption">
+					<h4>{{image.prop_title}}</h4>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+		<a class="left carousel-control" href="#myCarousel" data-slide="prev">&lsaquo;</a>
+		<a class="right carousel-control" href="#myCarousel" data-slide="next">&rsaquo;</a>
+	</div>
+	</div>
 </div>
 	
 {% endblock %}
