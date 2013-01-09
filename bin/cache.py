@@ -1,6 +1,6 @@
 import simples3
 from tamaraw.util import load_config
-import os
+import os, sys
 config = load_config()
 bucket = simples3.S3Bucket(str(config['simples3']['bucket']),
                            str(config['simples3']['credentials']['aws_access_key_id']),
