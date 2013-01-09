@@ -46,6 +46,7 @@
 				<img src="{{ url_for('get_image', store_key=image.store_key, x=640, y=480) }}" alt="">
 				<div class="carousel-caption">
 					<h4>{{image.prop_title}}</h4>
+					<p style="color: rgb(255, 255, 255)"><small>Bildrechte: {{image.prop_rights}}</small></p>
 				</div>
 			</div>
 			{% endfor %}
