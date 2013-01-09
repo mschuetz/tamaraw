@@ -1,9 +1,10 @@
 # encoding: utf-8
-import random, os, magic, Image, base64, struct, boto, time, mimetypes
-from flask import abort, redirect
+import random, os, magic, Image, base64, struct, time, mimetypes
+from flask import redirect
 from flask.helpers import send_file
 import tempfile
 from util import check_store_key
+from simples3 import S3Bucket
 
 def unique_id():
     return base64.urlsafe_b64encode(struct.pack('fHH', time.time(), os.getpid() % 65536, random.randint(0, 65535))).replace('=', '_')
@@ -107,66 +108,6 @@ class LocalStore:
     def delete(self, key):
         check_store_key(key)
         os.remove(self.path(key))
-
-def create_upload_group():
-    return time.strftime('%Y%m%d_') + unique_id()
-
-class S3Store (Store):
-    def __init__(self, credentials, bucket, prefix=''):
-        self.s3 = boto.connect_s3(**credentials).get_bucket(bucket)
-        self.prefix = prefix
-
-    def thumbnail_key(self, key, size):
-        return key + ('_%sx%s' % (size))
-
-    # this is rather inefficient but it's impossible to create a PIL Image directly from an S3
-    # key as it doesn't support seeking. Therefore, the file is saved to a local temp file which
-    # is then scaled and saved to a local temp file again because boto s3 keys do not support writing. 
-    def create_thumbnail(self, key, size):
-        s3_key = self.s3.get_key(self.prefix + key)
-        thumb_s3_key = self.s3.new_key(self.prefix + self.thumbnail_key(key, size))
-
-        in_tmp = tempfile.TemporaryFile()
-        in_tmp.write(s3_key.read())
-        in_tmp.seek(0)
-        try:
-            img = Image.open(in_tmp)
-            out_tmp = tempfile.TemporaryFile()
-            try:
-                resize(img, size, False, out_tmp)
-                out_tmp.seek(0)
-                thumb_s3_key.set_contents_from_file(out_tmp)
-            finally:
-                out_tmp.close()
-        finally:
-            in_tmp.close()
-
-    def deliver_image(self, key, size=None):
-        if size:
-            thumb_key = self.thumbnail_key(key, size)
-            if self.s3.get_key(self.prefix + thumb_key) == None:
-                self.create_thumbnail(key, size)
-            return self.deliver_file(self.prefix + thumb_key)
-        else:
-            return self.deliver_file(self.prefix + key)
-
-    def deliver_file(self, key):
-        if key:
-            url = self.s3.get_key(key).generate_url(3600)
-            return redirect(url, 307)
-        else:
-            abort(404)
-
-    def save(self, fp, mimetype='application/octet-stream'):
-        key_name = unique_id()
-        key = self.s3.new_key(self.prefix + key_name)
-        key.set_contents_from_file(fp)
-        return key_name
-
-    def delete(self, key):
-        self.s3.get_key(self.prefix + key).delete()
-
-from simples3 import S3Bucket
 
 class SimpleS3Store(Store):
     def __init__(self, credentials, bucket, baseurl, logger, prefix=''):

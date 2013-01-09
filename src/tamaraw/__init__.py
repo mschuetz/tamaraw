@@ -9,7 +9,7 @@ from dateutil import tz
 from jinja2 import TemplateNotFound
 
 import dao
-from store import S3Store, LocalStore, SimpleS3Store
+from store import LocalStore, SimpleS3Store
 from util import InvalidStoreKey
 from util import load_config
 
@@ -18,9 +18,7 @@ config = load_config()
 app = Flask('tamaraw')
 app.config['SECRET_KEY'] = str(config['session_secret'])
 
-if config['store'] == 's3':
-    store = S3Store(config['s3']['credentials'], config['s3']['bucket'], 'images_')
-elif config['store'] == 'simples3':
+if config['store'] == 'simples3':
     store = SimpleS3Store(config['simples3']['credentials'],
                           config['simples3']['bucket'],
                           config['simples3']['baseurl'],
