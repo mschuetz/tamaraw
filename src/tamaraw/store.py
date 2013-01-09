@@ -152,6 +152,10 @@ class SimpleS3Store(Store):
                                       
     def thumbnail_key(self, key, size):
         return key + ('_%sx%s' % (size))
+    
+    def default_headers(self, filename):
+        return {'Content-Disposition': 'inline; filename=%s' % (filename,),
+                'Cache-Control': 'public max-age=86400'}
 
     def create_thumbnail(self, key, size):
         b = self.bucket()
@@ -173,7 +177,7 @@ class SimpleS3Store(Store):
                 out_tmp.seek(0)
                 thumb_s3_key = self.prefix + thumb_key
                 b.put(thumb_s3_key, out_tmp.read(), mimetype='image/jpeg',
-                      headers={'Content-Disposition': 'inline; filename=%s.jpg' % (thumb_s3_key,)})
+                      headers=self.default_headers(thumb_s3_key))
             finally:
                 out_tmp.close()
         finally:
@@ -214,8 +218,7 @@ class SimpleS3Store(Store):
         with self.cache.open(key_name + ext, 'w') as cache_file:
             cache_file.write(content)
         self.bucket().put(s3_key, content, mimetype=mimetype,
-              headers={'Content-Disposition': 'inline; filename=%s%s' % (s3_key, ext),
-                       'Cache-Control': 'public max-age=86400'})
+                          headers=self.default_headers(s3_key + ext))
         return key_name
 
     def delete(self, key):
