@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, abort, ses
 import urlparse
 import urllib
 import mimetypes
+import re
 from flask.helpers import flash
 from datetime import datetime
 from dateutil import tz
