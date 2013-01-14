@@ -2,6 +2,7 @@ import time
 import os
 import tempfile
 import json
+import rawes
 
 config = {
     "language": "de",
@@ -29,6 +30,10 @@ class TamarawTestCase(unittest.TestCase):
     def setUp(self):
         self.app = tamaraw.app.test_client()
         tamaraw.user_dao.create_user('admin', 'asdf')
+
+    def tearDown(self):
+        es = rawes.Elastic()
+        es.delete(config['elasticsearch']['indexname'])
 
     def test_smoke(self):
         rv = self.app.get('/')
