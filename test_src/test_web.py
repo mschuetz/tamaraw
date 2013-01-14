@@ -17,12 +17,13 @@ config = {
         "indexname": "test_dao%s" % (time.time())
     }
 }
-config_fn = tempfile.mktemp()
-with open(config_fn, 'w') as f:
+with tempfile.NamedTemporaryFile() as f:
     json.dump(config, f)
+    f.flush()
+    # import tamaraw before the file is automatically deleted
+    os.environ['TAMARAW_CONFIG'] = f.name
+    import tamaraw
 
-os.environ['TAMARAW_CONFIG'] = config_fn
-import tamaraw
 import unittest
 
 class TamarawTestCase(unittest.TestCase):
