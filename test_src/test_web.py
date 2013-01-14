@@ -42,6 +42,7 @@ class TamarawTestCase(unittest.TestCase):
         rv = self.app.get('/')
         self.assertEquals('200 OK', rv.status)
         tamaraw.image_dao.create('asdf', 'TEST', 'foo.jpg', prop_title='test title')
+        tamaraw.image_dao.refresh_indices()
         rv = self.app.get('/recent/')
         self.assertEquals('200 OK', rv.status)
         rv = self.app.get('/recent/o1')
