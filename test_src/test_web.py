@@ -57,7 +57,34 @@ class TamarawTestCase(unittest.TestCase):
         #                   follow_redirects=True)
         self.assertEquals('302 FOUND', rv.status)
         # assert 'login succesful' in rv.data
-        
+
+    def test_search(self):
+        tamaraw.image_dao.create('asdf', 'TEST1', 'foo.jpg', prop_title='foo bar')
+        tamaraw.image_dao.create('asdf', 'TEST2', 'foo.jpg', prop_title='baz quux')
+        tamaraw.image_dao.refresh_indices()
+        rv = self.app.get('/search/?query=bar')
+        self.assertEquals('200 OK', rv.status)
+        assert 'foo bar' in rv.data
+        assert 'baz quux' not in rv.data
+        rv = self.app.get('/search/?query=quux')
+        self.assertEquals('200 OK', rv.status)
+        assert 'foo bat' not in rv.data
+        assert 'baz quux' in rv.data
+
+    def test_browse_tags(self):
+        tamaraw.image_dao.create('asdf', 'TEST1', 'foo.jpg', prop_title='foo bar',
+                                 prop_tags=['alfalfa graybeard thriller cowslip'])
+        tamaraw.image_dao.create('asdf', 'TEST2', 'foo.jpg', prop_title='baz quux',
+                                 prop_tags=['alfalfa graybeard unleaded numerical schmaltz'])
+        tamaraw.image_dao.refresh_indices()
+        rv = self.app.get('/browse/prop_tags/alfalfa graybeard thriller cowslip/')
+        self.assertEquals('200 OK', rv.status)
+        assert 'foo bar' in rv.data
+        assert 'baz quux' not in rv.data
+        rv = self.app.get('/browse/prop_tags/alfalfa graybeard unleaded numerical schmaltz/')
+        self.assertEquals('200 OK', rv.status)
+        assert 'foo bat' not in rv.data
+        assert 'baz quux' in rv.data
 
 if __name__ == '__main__':
     unittest.main()
