@@ -25,10 +25,12 @@ with tempfile.NamedTemporaryFile() as f:
     import tamaraw
 
 import unittest
+import logging
 
 class TamarawTestCase(unittest.TestCase):
 
     def setUp(self):
+        tamaraw.app.logger.setLevel(logging.DEBUG)
         self.app = tamaraw.app.test_client()
         tamaraw.user_dao.create_user('admin', 'asdf')
 
