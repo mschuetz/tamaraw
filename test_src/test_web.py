@@ -86,5 +86,15 @@ class TamarawTestCase(unittest.TestCase):
         assert 'foo bar' not in rv.data
         assert 'baz quux' in rv.data
 
+    def test_subscribe(self):
+        self.app.post('/public/subscribe', data={'name': 'Holden Caulfield',
+                                                 'email': 'holden.caulfield@vfmac.edu',
+                                                 'comment':'asdf asdf'})
+        self.app.post('/login', data={'username': 'admin', 'password': 'asdf'})
+        rv = self.app.get('/private/comments/')
+        self.assertEqual('200 OK', rv.status)
+        assert 'Holden Caulfield' in rv.data
+        assert 'holden.caulfield@vfmac.edu' in rv.data
+
 if __name__ == '__main__':
     unittest.main()
