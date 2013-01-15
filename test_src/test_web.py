@@ -83,7 +83,7 @@ class TamarawTestCase(unittest.TestCase):
         assert 'baz quux' not in rv.data
         rv = self.app.get('/browse/prop_tags/alfalfa graybeard unleaded numerical schmaltz/')
         self.assertEquals('200 OK', rv.status)
-        assert 'foo bat' not in rv.data
+        assert 'foo bar' not in rv.data
         assert 'baz quux' in rv.data
 
 if __name__ == '__main__':
