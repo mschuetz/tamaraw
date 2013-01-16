@@ -91,6 +91,7 @@ class TamarawTestCase(unittest.TestCase):
                                                  'email': 'holden.caulfield@vfmac.edu',
                                                  'comment':'asdf asdf'})
         self.app.post('/login', data={'username': 'admin', 'password': 'asdf'})
+        tamaraw.image_dao.refresh_indices()
         rv = self.app.get('/private/comments/')
         self.assertEqual('200 OK', rv.status)
         assert 'Holden Caulfield' in rv.data
