@@ -37,6 +37,11 @@ class TamarawTestCase(unittest.TestCase):
     def tearDown(self):
         es = rawes.Elastic()
         es.delete(config['elasticsearch']['indexname'])
+        
+    def login_as_admin(self):
+        return self.app.post('/login', data={'username': 'admin', 'password': 'asdf'},
+                             headers={'Referer': 'http://localhost/'},
+                             follow_redirects=True)
 
     def test_smoke(self):
         rv = self.app.get('/')
@@ -53,10 +58,9 @@ class TamarawTestCase(unittest.TestCase):
 
     def test_login(self):
         # currently the login controller redirects to the referrer which is a full url and not supported by the flask testclient
-        rv = self.app.post('/login', data={'username': 'admin', 'password': 'asdf'})
-        #                   follow_redirects=True)
-        self.assertEquals('302 FOUND', rv.status)
-        # assert 'login succesful' in rv.data
+        rv = self.login_as_admin()
+        self.assertEquals('200 OK', rv.status)
+        assert 'login succesful' in rv.data
 
     def test_search(self):
         tamaraw.image_dao.create('asdf', 'TEST1', 'foo.jpg', prop_title='foo bar')
@@ -90,7 +94,7 @@ class TamarawTestCase(unittest.TestCase):
         self.app.post('/public/subscribe', data={'name': 'Holden Caulfield',
                                                  'email': 'holden.caulfield@vfmac.edu',
                                                  'comment':'asdf asdf'})
-        self.app.post('/login', data={'username': 'admin', 'password': 'asdf'})
+        self.login_as_admin()
         tamaraw.image_dao.refresh_indices()
         rv = self.app.get('/private/comments/')
         self.assertEqual('200 OK', rv.status)
@@ -98,7 +102,7 @@ class TamarawTestCase(unittest.TestCase):
         assert 'holden.caulfield@vfmac.edu' in rv.data
 
     def test_delete_image(self):
-        self.app.post('/login', data={'username': 'admin', 'password': 'asdf'})
+        self.login_as_admin()
         tamaraw.image_dao.create('asdf', 'TEST', 'foo.jpg', prop_title='test title')
         testfile = config['localstore']['basepath'] + '/TEST'
         try: 
@@ -112,8 +116,22 @@ class TamarawTestCase(unittest.TestCase):
             except:
                 pass
 
+    def test_delete_image_invalid_key(self):
+        self.login_as_admin()
+        rv = self.app.post('/image/TEST(1+1)/delete', follow_redirects=True)
+        self.assertEqual('400 BAD REQUEST', rv.status)
+
+    def test_delete_image_redirect_to_last_collection(self):
+        self.login_as_admin()
+        tamaraw.image_dao.create('asdf', 'TEST', 'foo.jpg', prop_title='test title')
+        with self.app.session_transaction() as sess:
+            sess['last_collection'] = '/recent/'
+            rv = self.app.post('/image/TEST/delete')
+            self.assertEqual('302 FOUND', rv.status)
+            self.assertEqual('http://localhost/recent/', rv.headers['Location'])
+
     def test_delete_image_without_file(self):
-        self.app.post('/login', data={'username': 'admin', 'password': 'asdf'})
+        self.login_as_admin()
         tamaraw.image_dao.create('asdf', 'TEST', 'foo.jpg', prop_title='test title')
         rv = self.app.post('/image/TEST/delete', follow_redirects=True)
         self.assertEqual('200 OK', rv.status)

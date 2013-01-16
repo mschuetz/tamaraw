@@ -349,6 +349,7 @@ def logout():
     if 'username' in session:
         del session['username']
     flash("logout succesful", 'alert-success')
+    app.logger.debug('redirecting to ' + request.referrer)
     return redirect(request.referrer)
 
 @app.route('/login', methods=['POST'])
