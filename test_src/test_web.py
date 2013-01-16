@@ -112,5 +112,12 @@ class TamarawTestCase(unittest.TestCase):
             except:
                 pass
 
+    def test_delete_image_without_file(self):
+        self.app.post('/login', data={'username': 'admin', 'password': 'asdf'})
+        tamaraw.image_dao.create('asdf', 'TEST', 'foo.jpg', prop_title='test title')
+        rv = self.app.post('/image/TEST/delete', follow_redirects=True)
+        self.assertEqual('200 OK', rv.status)
+        assert "ignorable error" in rv.data
+
 if __name__ == '__main__':
     unittest.main()
