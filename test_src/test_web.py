@@ -97,5 +97,20 @@ class TamarawTestCase(unittest.TestCase):
         assert 'Holden Caulfield' in rv.data
         assert 'holden.caulfield@vfmac.edu' in rv.data
 
+    def test_delete_image(self):
+        self.app.post('/login', data={'username': 'admin', 'password': 'asdf'})
+        tamaraw.image_dao.create('asdf', 'TEST', 'foo.jpg', prop_title='test title')
+        testfile = config['localstore']['basepath'] + '/TEST'
+        try: 
+            open(testfile, 'w').close()
+            rv = self.app.post('/image/TEST/delete', follow_redirects=True)
+            self.assertEqual('200 OK', rv.status)
+            assert "deleted file" in rv.data
+        finally:
+            try:
+                os.remove(testfile)
+            except:
+                pass
+
 if __name__ == '__main__':
     unittest.main()
