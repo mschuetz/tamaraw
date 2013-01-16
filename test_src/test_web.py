@@ -17,6 +17,10 @@ config = {
         "indexname": "test_dao%s" % (time.time())
     }
 }
+
+# TODO this only works if this set of tests is executed on its own.
+# if all tests are executed via nose, the tamaraw package has most
+# likely already been initialized
 with tempfile.NamedTemporaryFile() as f:
     json.dump(config, f)
     f.flush()
@@ -136,6 +140,8 @@ class TamarawTestCase(unittest.TestCase):
         rv = self.app.post('/image/TEST/delete', follow_redirects=True)
         self.assertEqual('200 OK', rv.status)
         assert "ignorable error" in rv.data
+
+        
 
 if __name__ == '__main__':
     unittest.main()
