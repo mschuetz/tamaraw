@@ -72,6 +72,18 @@ class TamarawTestCase(unittest.TestCase):
         self.assertEquals('200 OK', rv.status)
         assert 'login succesful' in rv.data
 
+    def test_logout(self):
+        rv = self.app.get('/private/comments/')
+        self.assertForbidden(rv)
+        rv = self.login_as_admin()
+        self.assertOk(rv)
+        rv = self.app.get('/private/comments/')
+        self.assertOk(rv)
+        rv = self.app.get('/logout', follow_redirects=True)
+        self.assertOk(rv)
+        rv = self.app.get('/private/comments/')
+        self.assertForbidden(rv)
+
     def test_search(self):
         tamaraw.image_dao.create('asdf', 'TEST1', 'foo.jpg', prop_title='foo bar')
         tamaraw.image_dao.create('asdf', 'TEST2', 'foo.jpg', prop_title='baz quux')
