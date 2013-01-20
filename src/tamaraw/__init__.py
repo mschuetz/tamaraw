@@ -1,5 +1,6 @@
 # encoding: utf-8
-from flask import Flask, render_template, request, redirect, url_for, abort, session, jsonify
+from flask import Flask, request, redirect, url_for, abort, session, jsonify
+from flask import render_template as flask_render_template
 import urlparse
 import urllib
 import mimetypes
@@ -38,6 +39,19 @@ image_dao = dao.ImageDao(*dao_conf)
 user_dao = dao.UserDao(*dao_conf)
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+
+def get_git_version():
+    import subprocess, os
+    # os.chdir(os.path.dirname(__file__))
+    # yes, the arguments must be reversed, wtf?
+    p = subprocess.Popen(executable='/usr/bin/git', args=['--always', 'describe'], stdout=subprocess.PIPE)
+    version, _ = p.communicate()
+    return version.replace("\n", '')
+
+VERSION = get_git_version()
+
+def render_template(name, **kwargs):
+    return flask_render_template(name, app_version=VERSION, **kwargs)
 
 @app.template_filter('filter')
 def template_filter(values, filter=None):
