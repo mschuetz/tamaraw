@@ -1,7 +1,7 @@
 # encoding: utf-8
 import unittest, time, uuid, rawes
 from tamaraw.dao import ImageDao
-from tamaraw.store import unique_id
+from tamaraw.storage import unique_id
 from tamaraw.util import InvalidStoreKey
 from contracts.interface import ContractNotRespected
 

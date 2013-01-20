@@ -10,7 +10,7 @@ from dateutil import tz
 from jinja2 import TemplateNotFound
 
 import dao
-from store import LocalStore, SimpleS3Store, FileCache
+from storage import LocalStore, SimpleS3Store, FileCache
 from util import InvalidStoreKey
 from util import load_config
 

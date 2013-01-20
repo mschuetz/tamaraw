@@ -1,8 +1,8 @@
 # encoding: utf-8
 import unittest
 from StringIO import StringIO
-from tamaraw.store import LocalStore
-from tamaraw.store import unique_id
+from tamaraw.storage import LocalStore
+from tamaraw.storage import unique_id
 from tamaraw.dao import check_store_key
 
 class TestLocalStore(unittest.TestCase):
