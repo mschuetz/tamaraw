@@ -47,6 +47,12 @@ class TamarawTestCase(unittest.TestCase):
     def tearDown(self):
         es = rawes.Elastic()
         es.delete(config['elasticsearch']['indexname'])
+
+    def assertOk(self, rv):
+        self.assertEquals('200 OK', rv.status)
+
+    def assertForbidden(self, rv):
+        self.assertEqual('403 FORBIDDEN', rv.status)
         
     def login_as_admin(self):
         return self.app.post('/login', data={'username': 'admin', 'password': 'asdf'},
@@ -55,21 +61,20 @@ class TamarawTestCase(unittest.TestCase):
 
     def test_smoke(self):
         rv = self.app.get('/')
-        self.assertEquals('200 OK', rv.status)
+        self.assertOk(rv)
         tamaraw.image_dao.create('asdf', 'TEST', 'foo.jpg', prop_title='test title')
         tamaraw.image_dao.refresh_indices()
         rv = self.app.get('/recent/')
-        self.assertEquals('200 OK', rv.status)
+        self.assertOk(rv)
         rv = self.app.get('/recent/o1')
-        self.assertEquals('200 OK', rv.status)
+        self.assertOk(rv)
         rv = self.app.get('/image/TEST')
-        self.assertEquals('200 OK', rv.status)
+        self.assertOk(rv)
         assert 'test title' in rv.data
 
     def test_login(self):
-        # currently the login controller redirects to the referrer which is a full url and not supported by the flask testclient
         rv = self.login_as_admin()
-        self.assertEquals('200 OK', rv.status)
+        self.assertOk(rv)
         assert 'login succesful' in rv.data
 
     def test_logout(self):
@@ -89,12 +94,12 @@ class TamarawTestCase(unittest.TestCase):
         tamaraw.image_dao.create('asdf', 'TEST2', 'foo.jpg', prop_title='baz quux')
         tamaraw.image_dao.refresh_indices()
         rv = self.app.get('/search/?query=bar')
-        self.assertEquals('200 OK', rv.status)
+        self.assertOk(rv)
         assert 'foo bar' in rv.data
         assert 'baz quux' not in rv.data
         rv = self.app.get('/search/?query=quux')
-        self.assertEquals('200 OK', rv.status)
-        assert 'foo bat' not in rv.data
+        self.assertOk(rv)
+        assert 'foo bar' not in rv.data
         assert 'baz quux' in rv.data
 
     def test_browse_tags(self):
@@ -104,11 +109,11 @@ class TamarawTestCase(unittest.TestCase):
                                  prop_tags=['alfalfa graybeard unleaded numerical schmaltz'])
         tamaraw.image_dao.refresh_indices()
         rv = self.app.get('/browse/prop_tags/alfalfa graybeard thriller cowslip/')
-        self.assertEquals('200 OK', rv.status)
+        self.assertOk(rv)
         assert 'foo bar' in rv.data
         assert 'baz quux' not in rv.data
         rv = self.app.get('/browse/prop_tags/alfalfa graybeard unleaded numerical schmaltz/')
-        self.assertEquals('200 OK', rv.status)
+        self.assertOk(rv)
         assert 'foo bar' not in rv.data
         assert 'baz quux' in rv.data
 
@@ -119,7 +124,7 @@ class TamarawTestCase(unittest.TestCase):
         self.login_as_admin()
         tamaraw.image_dao.refresh_indices()
         rv = self.app.get('/private/comments/')
-        self.assertEqual('200 OK', rv.status)
+        self.assertOk(rv)
         assert 'Holden Caulfield' in rv.data
         assert 'holden.caulfield@vfmac.edu' in rv.data
 
@@ -130,7 +135,7 @@ class TamarawTestCase(unittest.TestCase):
         try: 
             open(testfile, 'w').close()
             rv = self.app.post('/image/TEST/delete', follow_redirects=True)
-            self.assertEqual('200 OK', rv.status)
+            self.assertOk(rv)
             assert "deleted file" in rv.data
         finally:
             try:
@@ -156,7 +161,7 @@ class TamarawTestCase(unittest.TestCase):
         self.login_as_admin()
         tamaraw.image_dao.create('asdf', 'TEST', 'foo.jpg', prop_title='test title')
         rv = self.app.post('/image/TEST/delete', follow_redirects=True)
-        self.assertEqual('200 OK', rv.status)
+        self.assertOk(rv)
         assert "ignorable error" in rv.data
 
         
