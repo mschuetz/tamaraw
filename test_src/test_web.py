@@ -18,15 +18,21 @@ config = {
     }
 }
 
-# TODO this only works if this set of tests is executed on its own.
-# if all tests are executed via nose, the tamaraw package has most
-# likely already been initialized
+# first, write the config to a temp file, then make sure the config is loaded even
+# if the temp file was not read because the package was loaded by a previous test
 with tempfile.NamedTemporaryFile() as f:
     json.dump(config, f)
     f.flush()
     # import tamaraw before the file is automatically deleted
     os.environ['TAMARAW_CONFIG'] = f.name
     import tamaraw
+    # in case it has been loaded before:
+    dao_conf = [config['elasticsearch']['rawes'], config['elasticsearch']['indexname']]
+    tamaraw.config_dao = tamaraw.dao.ConfigDao(*dao_conf)
+    tamaraw.comment_dao = tamaraw.dao.CommentDao(*dao_conf)
+    tamaraw.image_dao = tamaraw.dao.ImageDao(*dao_conf)
+    tamaraw.user_dao = tamaraw.dao.UserDao(*dao_conf)
+    tamaraw.store = tamaraw.storage.LocalStore(config['localstore']['basepath'])
 
 import unittest
 import logging
