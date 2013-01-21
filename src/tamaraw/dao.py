@@ -75,9 +75,7 @@ class ImageDao:
             return hits, total
         facets = {}
         for facet_key, facet in rawes_result['facets'].iteritems():
-            terms = {}
-            for term in facet['terms']:
-                terms[term['term']] = term['count']
+            terms = {term['term'] : term['count'] for term in facet['terms']}
             facets[facet_key] = terms 
         return hits, total, facets
 
