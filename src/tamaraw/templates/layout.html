@@ -104,6 +104,7 @@
 		<li class="previous disabled"><a href="#">
 	{% endif %}
 	&larr; Zurück</a></li>
+	<li>Seite {{(offset / page_size + 1) |int}}/{{(total / page_size + 1) |int}}</li>
 	{% if next_offset is defined %}
 		<li class="next"><a href="./o{{next_offset}}?{{request.query_string}}">
 	{% else %}

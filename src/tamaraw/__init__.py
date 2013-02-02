@@ -142,6 +142,8 @@ def render_image_list(images, template_name, offset, page_size, total):
 
 def add_pagination_params(params, offset, page_size, total):
     params['offset'] = offset
+    params['page_size'] = page_size
+    params['total'] = total
     if total > (offset + page_size):
         params['next_offset'] = offset + page_size
     if offset > 0:

@@ -6,7 +6,7 @@ from util import check_store_key
 from simples3 import S3Bucket
 
 def unique_id():
-    return base64.urlsafe_b64encode(struct.pack('fHH', time.time(), os.getpid() % 65536, random.randint(0, 65535))).replace('=', '_')
+    return base64.urlsafe_b64encode(struct.pack('fHH', time.time(), os.getpid() % 65536, random.randint(0, 65535))).replace('=', '')
 
 # http://united-coders.com/christian-harms/image-resizing-tips-every-coder-should-know/
 def resize(img, box, fit, out, quality=75):
