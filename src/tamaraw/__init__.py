@@ -304,10 +304,6 @@ def quick_search(offset):
 @app.route('/browse/<key>/<value>/o<int:offset>')
 def browse(key, value, offset):
     page_size = get_page_size()
-    # workaround for flask bug?
-    if '%' in value:
-        value = urllib.unquote(urllib.unquote(value))
-        return redirect(url_for('browse', key=key, value=value, offset=offset))
     images, total = image_dao.search({'query': {'match': {key: {'query': value, 'operator': 'and'}}}}, offset, page_size)
     return render_image_list(images, 'search.html', partial(url_for, 'browse', key=key, value=value), offset, page_size, total)
 
