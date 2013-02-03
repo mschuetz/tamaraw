@@ -99,14 +99,14 @@
 {% macro pager(classes) %}
 <ul class="pager {{classes}}">
 	{% if prev_offset is defined %}
-		<li class="previous"><a href="o{{prev_offset}}?{{request.query_string}}">
+		<li class="previous"><a href="{{prev_offset}}">
 	{% else %}
 		<li class="previous disabled"><a href="#">
 	{% endif %}
 	&larr; Zurück</a></li>
 	<li>Seite {{(offset / page_size + 1) |int}}/{{(total / page_size + 1) |int}}</li>
 	{% if next_offset is defined %}
-		<li class="next"><a href="./o{{next_offset}}?{{request.query_string}}">
+		<li class="next"><a href="{{next_offset}}">
 	{% else %}
 		<li class="next disabled"><a href="#">
 	{% endif%}
