@@ -9,6 +9,7 @@ from flask.helpers import flash
 from datetime import datetime
 from dateutil import tz
 from jinja2 import TemplateNotFound
+from functools import partial 
 
 import dao
 from storage import LocalStore, SimpleS3Store, FileCache
@@ -116,7 +117,7 @@ def recent_images(offset):
     images, total = image_dao.search({'query': dao.range_query('created_at', datetime.fromtimestamp(0, tz.gettz()), datetime.now(tz.gettz())),
                                          'sort': {'created_at': {'order': 'desc'}}},
                                         offset, page_size)
-    return render_image_list(images, 'recent.html', offset, page_size, total)
+    return render_image_list(images, 'recent.html', partial(url_for, 'recent_images'), offset, page_size, total)
 
 @app.route('/upload_group/<upload_group>/', defaults={'offset': 0})
 @app.route('/upload_group/<upload_group>/o<int:offset>')
@@ -126,32 +127,33 @@ def upload_group(upload_group, offset):
     images, total = image_dao.search({'query': {'match': {'upload_group': upload_group}},
                                          'sort': {'created_at': {'order': 'desc'}}},
                                         offset, page_size)
-    return render_image_list(images, 'upload_group.html', offset, page_size, total)
+    return render_image_list(images, 'upload_group.html', partial(url_for, 'upload_group', upload_group=upload_group),
+                             offset, page_size, total)
 
 def get_page_size(default=8):
     page_size = request.args.get('page_size') or default
     return int(page_size)
 
-def render_image_list(images, template_name, offset, page_size, total):
+def render_image_list(images, template_name, url_for_func, offset, page_size, total):
     for image in images:
         for key in image:
             if image[key] is None:
                 image[key] = ''
-    params = add_pagination_params({'images': images}, offset, page_size, total)
+    params = add_pagination_params({'images': images}, url_for_func, offset, page_size, total)
     return render_template(template_name, **params)
 
-def add_pagination_params(params, offset, page_size, total):
+def add_pagination_params(params, url_for_func, offset, page_size, total):
     params['offset'] = offset
     params['page_size'] = page_size
     params['total'] = total
     if total > (offset + page_size):
-        params['next_offset'] = offset + page_size
+        params['next_offset'] = url_for_func(offset=offset + page_size)
     if offset > 0:
         prev_offset = offset - page_size
         if prev_offset > 0:
-            params['prev_offset'] = prev_offset
+            params['prev_offset'] = url_for_func(offset=prev_offset)
         else: 
-            params['prev_offset'] = 0
+            params['prev_offset'] = url_for_func(offset=0)
     return params
     
 def allowed_file(filename):
@@ -296,7 +298,7 @@ def quick_search(offset):
             fields.append(prop['key'])
     
     images, total = image_dao.search({'query': {'multi_match': {'query': query, 'fields': fields}}}, offset, page_size)
-    return render_image_list(images, 'search.html', offset, page_size, total)
+    return render_image_list(images, 'search.html', partial(url_for, 'quick_search', query=query), offset, page_size, total)
 
 @app.route('/browse/<key>/<value>/', defaults={'offset': 0})
 @app.route('/browse/<key>/<value>/o<int:offset>')
@@ -307,7 +309,7 @@ def browse(key, value, offset):
         value = urllib.unquote(urllib.unquote(value))
         return redirect(url_for('browse', key=key, value=value, offset=offset))
     images, total = image_dao.search({'query': {'match': {key: {'query': value, 'operator': 'and'}}}}, offset, page_size)
-    return render_image_list(images, 'search.html', offset, page_size, total)
+    return render_image_list(images, 'search.html', partial(url_for, 'browse', key=key, value=value), offset, page_size, total)
 
 @app.route('/image/<store_key>/delete', methods=['POST'])
 def delete_image(store_key):
