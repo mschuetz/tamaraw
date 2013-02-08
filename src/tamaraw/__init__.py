@@ -355,7 +355,7 @@ def mark_comment_as_read(comment_id):
 def comments(offset):
     page_size = get_page_size()
     comments, total = comment_dao.get_all(offset, page_size)
-    params = add_pagination_params({'comments': comments}, offset, page_size, total)
+    params = add_pagination_params({'comments': comments}, partial(url_for, 'comments'), offset, page_size, total)
     return render_template('comments.html', **params)
     
 @app.route('/logout')
