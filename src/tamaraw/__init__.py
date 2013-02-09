@@ -299,7 +299,8 @@ def quick_search(offset):
             fields.append(prop['key'])
     
     images, total = image_dao.search({'query': {'multi_match': {'query': query, 'fields': fields}}}, offset, page_size)
-    return render_image_list(images, 'search.html', partial(url_for, 'quick_search', query=query), offset, page_size, total)
+    return render_image_list(images, 'search.html', partial(url_for, 'quick_search', query=query),
+                             offset, page_size, total, {'search_title': 'Volltextsuche: ' + query})
 
 @app.route('/browse/<key>/<value>/', defaults={'offset': 0})
 @app.route('/browse/<key>/<value>/o<int:offset>')
@@ -310,9 +311,8 @@ def browse(key, value, offset):
     for prop_config in config_dao.get_property_config():
         if prop_config['key'] == key:
             category_name = prop_config['human_' + config['language']]
-    template_params = {'category': category_name, 'query': value}
-    return render_image_list(images, 'browse.html', partial(url_for, 'browse', key=key, value=value),
-                             offset, page_size, total, template_params)
+    return render_image_list(images, 'search.html', partial(url_for, 'browse', key=key, value=value),
+                             offset, page_size, total, {'search_title': '%s: %s' % (category_name, value)})
 
 @app.route('/image/<store_key>/delete', methods=['POST'])
 def delete_image(store_key):

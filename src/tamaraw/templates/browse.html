@@ -1,9 +1,0 @@
-{% extends "layout.html" %}
-{% block body %}
-
-{% call db_navbar('search') %}{%endcall%}
-<h3>{{category}}: {{query}}</h3>
-<div>
-	{% call image_list(images, 'search', prev_offset, next_offset) %}{%endcall%}
-</div>
-{% endblock %}
