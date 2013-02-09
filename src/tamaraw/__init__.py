@@ -211,7 +211,7 @@ def image_page(store_key):
         if image == None:
             abort(404)
         prop_config = config_dao.get_property_config()
-        view_props = create_view_props(image, prop_config, set('prop_title'))
+        view_props = create_view_props(image, prop_config, set(['prop_title']))
         return render_template('image.html', image=image, view_props=view_props)
     except InvalidStoreKey:
         app.logger.warning('invalid store_key %s', repr(store_key))
@@ -255,7 +255,7 @@ def create_view_props(image, prop_config, exclude=set([])):
     language = config['language']
     for prop in prop_config:
         if prop['key'] in exclude:
-            next
+            continue
         this_view_prop = dict(human_name=prop['human_' + language], **prop)
         view_props.append(this_view_prop)
         if image.has_key(prop['key']):
