@@ -255,7 +255,7 @@ def create_view_props(image, prop_config, exclude=set([])):
     for prop in prop_config:
         if prop['key'] in exclude:
             next
-        this_view_prop = {'key': prop['key'], 'human_name': prop['human_' + language], 'type': prop['type']}
+        this_view_prop = dict(human_name=prop['human_' + language], **prop)
         view_props.append(this_view_prop)
         if image.has_key(prop['key']):
             this_view_prop['value'] = image[prop['key']] or ''
