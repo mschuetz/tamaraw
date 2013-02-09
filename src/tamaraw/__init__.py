@@ -134,12 +134,13 @@ def get_page_size(default=8):
     page_size = request.args.get('page_size') or default
     return int(page_size)
 
-def render_image_list(images, template_name, url_for_func, offset, page_size, total):
+def render_image_list(images, template_name, url_for_func, offset, page_size, total, additional_params={}):
     for image in images:
         for key in image:
             if image[key] is None:
                 image[key] = ''
-    params = add_pagination_params({'images': images}, url_for_func, offset, page_size, total)
+    params = dict(images=images, **additional_params)
+    add_pagination_params(params, url_for_func, offset, page_size, total)
     return render_template(template_name, **params)
 
 def add_pagination_params(params, url_for_func, offset, page_size, total):
@@ -305,7 +306,13 @@ def quick_search(offset):
 def browse(key, value, offset):
     page_size = get_page_size()
     images, total = image_dao.search({'query': {'match': {key: {'query': value, 'operator': 'and'}}}}, offset, page_size)
-    return render_image_list(images, 'search.html', partial(url_for, 'browse', key=key, value=value), offset, page_size, total)
+    category_name = ''
+    for prop_config in config_dao.get_property_config():
+        if prop_config['key'] == key:
+            category_name = prop_config['human_' + config['language']]
+    template_params = {'category': category_name, 'query': value}
+    return render_image_list(images, 'browse.html', partial(url_for, 'browse', key=key, value=value),
+                             offset, page_size, total, template_params)
 
 @app.route('/image/<store_key>/delete', methods=['POST'])
 def delete_image(store_key):
