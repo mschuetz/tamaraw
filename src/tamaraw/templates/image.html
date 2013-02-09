@@ -60,7 +60,7 @@
 					{% for item in prop.value %}
 						<li>
 							{{item}}
-							{% if item %}
+							{% if item and prop.use_for_browse %}
 							<a href="{{url_for('browse', key=prop.key, value=item)}}">
 								<i class="icon-search icon-gray"></i>
 							</a>
@@ -70,7 +70,7 @@
 					</ul>
 				{% else %}
 					{{prop.value or "&nbsp;"|safe}}
-					{% if prop.value %}
+					{% if prop.value and prop.use_for_browse %}
 					<a href="{{url_for('browse', key=prop.key, value=prop.value)}}">
 						<i class="icon-search icon-gray "></i>
 					</a>
