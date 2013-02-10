@@ -224,13 +224,21 @@ def image_page_in_result(store_key, result_set, offset):
     start_offset = max(prev_offset, 0)
     if result_set == 'recent_images':
         images, total = image_dao.recent(start_offset, 3)
-        image = images[int(not is_first)]
-#    elif result_set.startswith('upload_group:'):
-#        pass
+        result_set_title = 'Neue Bilder'
+    elif result_set.startswith('upload_group:'):
+        _, upload_group = result_set.split(':')
+        result_set_title = 'Uploadgruppe ' + upload_group
+        images, total = image_dao.upload_group_by_creation(upload_group, start_offset, 3)
+    elif result_set.startswith('search:'):
+        query = result_set.replace('search:', '')
+        result_set_title = 'Volltextsuche: ' + query
+        fields = assemble_full_text_fields(query)
+        images, total = image_dao.search({'query': {'multi_match': {'query': query, 'fields': fields}}}, start_offset, 3)
     else:
         # unknown result set
         return redirect(url_for('image_page', store_key=store_key))
 
+    image = images[int(not is_first)]
     if image['store_key'] != store_key:
         # result set has changed e.g. new uploads changed the order
         return redirect(url_for('image_page', store_key=store_key))
@@ -243,7 +251,8 @@ def image_page_in_result(store_key, result_set, offset):
         pagination_params['prev_offset'] = url_for('image_page', store_key=images[0]['store_key'], r=result_set, o=offset - 1)
     prop_config = config_dao.get_property_config()
     view_props = create_view_props(image, prop_config, set(['prop_title']))
-    return render_template('image.html', image=image, view_props=view_props, in_result_set=True, **pagination_params)
+    return render_template('image.html', image=image, view_props=view_props,
+                           in_result_set=True, result_set_title=result_set_title, **pagination_params)
 
 @app.route('/image/<store_key>/edit', methods=['POST'])
 def save_image(store_key):
@@ -306,15 +315,8 @@ def edit_image(store_key):
     view_props = create_view_props(image, prop_config)
     return render_template('edit.html', view_props=view_props, store_key=store_key)
 
-@app.route('/search/', defaults={'offset': 0})
-@app.route('/search/o<int:offset>')
-def quick_search(offset):
-    page_size = get_page_size()
-    query = request.args.get('query')
-    if query == None:
-        abort(400)
+def assemble_full_text_fields(query):
     prop_config = config_dao.get_property_config()
-    fields = []
     query_is_number = True
     try:
         int(query)
@@ -325,10 +327,20 @@ def quick_search(offset):
     for prop in prop_config:
         if query_is_number or prop['type'] != 'integer': 
             fields.append(prop['key'])
-    
+    return fields
+
+@app.route('/search/', defaults={'offset': 0})
+@app.route('/search/o<int:offset>')
+def quick_search(offset):
+    page_size = get_page_size()
+    query = request.args.get('query')
+    if query == None:
+        abort(400)
+    fields = assemble_full_text_fields(query)
     images, total = image_dao.search({'query': {'multi_match': {'query': query, 'fields': fields}}}, offset, page_size)
     return render_image_list(images, 'search.html', partial(url_for, 'quick_search', query=query),
-                             offset, page_size, total, {'search_title': 'Volltextsuche: ' + query})
+                             offset, page_size, total, {'search_title': 'Volltextsuche: ' + query,
+                                                        'query_name': 'search:' + query})
 
 @app.route('/browse/<key>/<value>/', defaults={'offset': 0})
 @app.route('/browse/<key>/<value>/o<int:offset>')
