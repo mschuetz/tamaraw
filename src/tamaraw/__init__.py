@@ -114,21 +114,18 @@ def get_image(store_key, x, y):
 def recent_images(offset):
     session['last_collection'] = url_for('recent_images', offset=offset)
     page_size = get_page_size()
-    images, total = image_dao.search({'query': dao.range_query('created_at', datetime.fromtimestamp(0, tz.gettz()), datetime.now(tz.gettz())),
-                                         'sort': {'created_at': {'order': 'desc'}}},
-                                        offset, page_size)
-    return render_image_list(images, 'recent.html', partial(url_for, 'recent_images'), offset, page_size, total)
+    images, total = image_dao.recent(offset, page_size)
+    return render_image_list(images, 'recent.html', partial(url_for, 'recent_images'), offset, page_size, total,
+                             additional_params={'query_name': 'recent_images'})
 
 @app.route('/upload_group/<upload_group>/', defaults={'offset': 0})
 @app.route('/upload_group/<upload_group>/o<int:offset>')
 def upload_group(upload_group, offset):
     session['last_collection'] = url_for('upload_group', upload_group=upload_group, offset=offset)
     page_size = get_page_size()
-    images, total = image_dao.search({'query': {'match': {'upload_group': upload_group}},
-                                         'sort': {'created_at': {'order': 'desc'}}},
-                                        offset, page_size)
+    images, total = image_dao.upload_group_by_creation(upload_group, offset, page_size)
     return render_image_list(images, 'upload_group.html', partial(url_for, 'upload_group', upload_group=upload_group),
-                             offset, page_size, total)
+                             offset, page_size, total, additional_params={'query_name': 'upload_group:%s' % (upload_group,)})
 
 def get_page_size(default=8):
     page_size = request.args.get('page_size') or default
@@ -206,16 +203,42 @@ def comment(store_key):
 
 @app.route('/image/<store_key>')
 def image_page(store_key):
-    try:
-        image = image_dao.get(store_key)
-        if image == None:
-            abort(404)
-        prop_config = config_dao.get_property_config()
-        view_props = create_view_props(image, prop_config, set(['prop_title']))
-        return render_template('image.html', image=image, view_props=view_props)
-    except InvalidStoreKey:
-        app.logger.warning('invalid store_key %s', repr(store_key))
-        abort(400)
+    result_set = request.args.get('r')
+    if result_set:
+        return image_page_in_result(store_key, result_set, int(request.args.get('o')))
+    else:
+        try:
+            image = image_dao.get(store_key)
+            if image == None:
+                abort(404)
+            prop_config = config_dao.get_property_config()
+            view_props = create_view_props(image, prop_config, set(['prop_title']))
+            return render_template('image.html', image=image, view_props=view_props)
+        except InvalidStoreKey:
+            app.logger.warning('invalid store_key %s', repr(store_key))
+            abort(400)
+
+def image_page_in_result(store_key, result_set, offset):
+    prev_offset = offset - 1
+    is_first = prev_offset == -1
+    start_offset = max(prev_offset, 0)
+    if result_set == 'recent_images':
+        images, total = image_dao.recent(start_offset, 3)
+        image = images[int(not is_first)]
+#    elif result_set.startswith('upload_group:'):
+#        pass
+    else:
+        return redirect(url_for('image_page', store_key=store_key))
+
+    pagination_params = dict(offset=offset, total=total, page_size=1)
+    is_last = offset + 1 >= total
+    if not is_last:
+        pagination_params['next_offset'] = url_for('image_page', store_key=images[-1]['store_key'], r=result_set, o=offset + 1)
+    if not is_first:
+        pagination_params['prev_offset'] = url_for('image_page', store_key=images[0]['store_key'], r=result_set, o=offset - 1)
+    prop_config = config_dao.get_property_config()
+    view_props = create_view_props(image, prop_config, set(['prop_title']))
+    return render_template('image.html', image=image, view_props=view_props, in_result_set=True, **pagination_params)
 
 @app.route('/image/<store_key>/edit', methods=['POST'])
 def save_image(store_key):
