@@ -228,6 +228,11 @@ def image_page_in_result(store_key, result_set, offset):
 #    elif result_set.startswith('upload_group:'):
 #        pass
     else:
+        # unknown result set
+        return redirect(url_for('image_page', store_key=store_key))
+
+    if image['store_key'] != store_key:
+        # result set has changed e.g. new uploads changed the order
         return redirect(url_for('image_page', store_key=store_key))
 
     pagination_params = dict(offset=offset, total=total, page_size=1)
