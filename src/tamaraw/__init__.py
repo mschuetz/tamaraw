@@ -247,9 +247,9 @@ def image_page_in_result(store_key, result_set, offset):
     image = images[int(not is_first)]
     if image['store_key'] != store_key:
         # result set has changed e.g. new uploads or edits changed the order
-        flash("Das Suchergebnis sich während der Navigation geändert (z.B. durch Hinzufügen neuer Bilder oder durch " + 
-              "Änderung einer Bildbeschreibung etc.). Die Navigation innerhalb des Suchergebnisses kann daher nicht "
-              "fortgesetzt werden. Bitte starten Sie die Suche erneut.", 'alert-warning')
+        flash(u"Das Suchergebnis sich während der Navigation geändert (z.B. durch Hinzufügen neuer Bilder oder durch " + 
+              u"Änderung einer Bildbeschreibung etc.). Die Navigation innerhalb des Suchergebnisses kann daher nicht "
+              u"fortgesetzt werden. Bitte starten Sie die Suche erneut.", 'alert-warning')
         return redirect(url_for('image_page', store_key=store_key))
 
     pagination_params = dict(offset=offset, total=total, page_size=1)
