@@ -234,6 +234,12 @@ def image_page_in_result(store_key, result_set, offset):
         result_set_title = 'Volltextsuche: ' + query
         fields = assemble_full_text_fields(query)
         images, total = image_dao.search({'query': {'multi_match': {'query': query, 'fields': fields}}}, start_offset, 3)
+    elif result_set.startswith('browse:'):
+        tmp = result_set.replace('browse:', '')
+        key = tmp[:tmp.index(':')]
+        value = tmp[tmp.index(':') + 1:]
+        result_set_title = human_name(key) + ': ' + value
+        images, total = image_dao.browse(key, value, start_offset, 3)
     else:
         # unknown result set
         return redirect(url_for('image_page', store_key=store_key))
@@ -342,17 +348,21 @@ def quick_search(offset):
                              offset, page_size, total, {'search_title': 'Volltextsuche: ' + query,
                                                         'query_name': 'search:' + query})
 
+def human_name(property_key):
+    for prop_config in config_dao.get_property_config():
+        if prop_config['key'] == property_key:
+            return prop_config['human_' + config['language']]
+    raise ValueError('not a valid property name')
+
 @app.route('/browse/<key>/<value>/', defaults={'offset': 0})
 @app.route('/browse/<key>/<value>/o<int:offset>')
 def browse(key, value, offset):
     page_size = get_page_size()
-    images, total = image_dao.search({'query': {'match': {key: {'query': value, 'operator': 'and'}}}}, offset, page_size)
-    category_name = ''
-    for prop_config in config_dao.get_property_config():
-        if prop_config['key'] == key:
-            category_name = prop_config['human_' + config['language']]
+    images, total = image_dao.browse(key, value, offset, page_size)
+    category_name = human_name(key)
     return render_image_list(images, 'search.html', partial(url_for, 'browse', key=key, value=value),
-                             offset, page_size, total, {'search_title': '%s: %s' % (category_name, value)})
+                             offset, page_size, total, {'search_title': '%s: %s' % (category_name, value),
+                                                        'query_name': 'browse:%s:%s' % (key, value)})
 
 @app.route('/image/<store_key>/delete', methods=['POST'])
 def delete_image(store_key):
