@@ -104,7 +104,7 @@
 		<li class="previous disabled"><a href="#">
 	{% endif %}
 	&larr; Zurück</a></li>
-	<li>Seite {{(offset / page_size + 1) |int}}/{{(total / page_size + 1) |int}}</li>
+	<li>Seite {{(offset / page_size + 1) | int}}/{{(total / page_size) | round(1, 'ceil') | int}}</li>
 	{% if next_offset is defined %}
 		<li class="next"><a href="{{next_offset}}">
 	{% else %}
@@ -121,7 +121,7 @@
 <ul class="thumbnails">
 	{% for image in row %}
  	<li class="span3">
-	<a href="{{ url_for('image_page', store_key=image.store_key) }}"> 		
+	<a href="{{ url_for('image_page', store_key=image.store_key, r=query_name, o=offset + loop.index0) }}"> 		
 		<div class="thumbnail">
 			<img class="img-rounded" src="{{ url_for('get_image', store_key=image.store_key, x=400, y=300) }}"/>
 			<p>{{ image.prop_title }}</p>

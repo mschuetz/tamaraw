@@ -81,12 +81,28 @@ class ImageDao:
             facets[facet_key] = terms 
         return hits, total, facets
 
-    @contract(data='dict(str: *)', offset='int,>=0', length='int,>=1')
-    def search(self, data, offset, length, additional_params=None):
+    @contract(data='dict(str: *)', offset='int,>=0', page_size='int,>=1')
+    def search(self, data, offset, page_size, additional_params=None):
         # todo merge paging with additional_params
-        res = self.es.get('%s/image/_search' % (self.indexname), data=data, params={'from': offset, 'size': length})
+        res = self.es.get('%s/image/_search' % (self.indexname), data=data, params={'from': offset, 'size': page_size})
         return self.map_search_results(res)
+    
+    @contract(offset='int,>=0', page_size='int,>=1')
+    def upload_group_by_creation(self, upload_group, offset, page_size):
+        return self.search({'query': {'match': {'upload_group': upload_group}},
+                            'sort': {'created_at': {'order': 'desc'}}},
+                            offset, page_size)
+    
+    @contract(offset='int,>=0', page_size='int,>=1')
+    def recent(self, offset, page_size):
+        return self.search({'query': range_query('created_at', datetime.fromtimestamp(0, tz.gettz()), datetime.now(tz.gettz())),
+                            'sort': {'created_at': {'order': 'desc'}}},
+                           offset, page_size)
 
+    @contract(offset='int,>=0', page_size='int,>=1')
+    def browse(self, key, value, offset, page_size):
+        return self.search({'query': {'match': {key: {'query': value, 'operator': 'and'}}}}, offset, page_size)
+        
     def get(self, store_key):
         check_store_key(store_key)
         res = self.es.get('%s/image/%s' % (self.indexname, store_key))

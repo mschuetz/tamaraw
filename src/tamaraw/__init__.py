@@ -114,21 +114,18 @@ def get_image(store_key, x, y):
 def recent_images(offset):
     session['last_collection'] = url_for('recent_images', offset=offset)
     page_size = get_page_size()
-    images, total = image_dao.search({'query': dao.range_query('created_at', datetime.fromtimestamp(0, tz.gettz()), datetime.now(tz.gettz())),
-                                         'sort': {'created_at': {'order': 'desc'}}},
-                                        offset, page_size)
-    return render_image_list(images, 'recent.html', partial(url_for, 'recent_images'), offset, page_size, total)
+    images, total = image_dao.recent(offset, page_size)
+    return render_image_list(images, 'recent.html', partial(url_for, 'recent_images'), offset, page_size, total,
+                             additional_params={'query_name': 'recent_images'})
 
 @app.route('/upload_group/<upload_group>/', defaults={'offset': 0})
 @app.route('/upload_group/<upload_group>/o<int:offset>')
 def upload_group(upload_group, offset):
     session['last_collection'] = url_for('upload_group', upload_group=upload_group, offset=offset)
     page_size = get_page_size()
-    images, total = image_dao.search({'query': {'match': {'upload_group': upload_group}},
-                                         'sort': {'created_at': {'order': 'desc'}}},
-                                        offset, page_size)
+    images, total = image_dao.upload_group_by_creation(upload_group, offset, page_size)
     return render_image_list(images, 'upload_group.html', partial(url_for, 'upload_group', upload_group=upload_group),
-                             offset, page_size, total)
+                             offset, page_size, total, additional_params={'query_name': 'upload_group:%s' % (upload_group,)})
 
 def get_page_size(default=8):
     page_size = request.args.get('page_size') or default
@@ -206,16 +203,62 @@ def comment(store_key):
 
 @app.route('/image/<store_key>')
 def image_page(store_key):
-    try:
-        image = image_dao.get(store_key)
-        if image == None:
-            abort(404)
-        prop_config = config_dao.get_property_config()
-        view_props = create_view_props(image, prop_config, set(['prop_title']))
-        return render_template('image.html', image=image, view_props=view_props)
-    except InvalidStoreKey:
-        app.logger.warning('invalid store_key %s', repr(store_key))
-        abort(400)
+    result_set = request.args.get('r')
+    if result_set:
+        return image_page_in_result(store_key, result_set, int(request.args.get('o')))
+    else:
+        try:
+            image = image_dao.get(store_key)
+            if image == None:
+                abort(404)
+            prop_config = config_dao.get_property_config()
+            view_props = create_view_props(image, prop_config, set(['prop_title']))
+            return render_template('image.html', image=image, view_props=view_props)
+        except InvalidStoreKey:
+            app.logger.warning('invalid store_key %s', repr(store_key))
+            abort(400)
+
+def image_page_in_result(store_key, result_set, offset):
+    prev_offset = offset - 1
+    is_first = prev_offset == -1
+    start_offset = max(prev_offset, 0)
+    if result_set == 'recent_images':
+        images, total = image_dao.recent(start_offset, 3)
+        result_set_title = 'Neue Bilder'
+    elif result_set.startswith('upload_group:'):
+        _, upload_group = result_set.split(':')
+        result_set_title = 'Uploadgruppe ' + upload_group
+        images, total = image_dao.upload_group_by_creation(upload_group, start_offset, 3)
+    elif result_set.startswith('search:'):
+        query = result_set.replace('search:', '')
+        result_set_title = 'Volltextsuche: ' + query
+        fields = assemble_full_text_fields(query)
+        images, total = image_dao.search({'query': {'multi_match': {'query': query, 'fields': fields}}}, start_offset, 3)
+    elif result_set.startswith('browse:'):
+        tmp = result_set.replace('browse:', '')
+        key = tmp[:tmp.index(':')]
+        value = tmp[tmp.index(':') + 1:]
+        result_set_title = human_name(key) + ': ' + value
+        images, total = image_dao.browse(key, value, start_offset, 3)
+    else:
+        # unknown result set
+        return redirect(url_for('image_page', store_key=store_key))
+
+    image = images[int(not is_first)]
+    if image['store_key'] != store_key:
+        # result set has changed e.g. new uploads changed the order
+        return redirect(url_for('image_page', store_key=store_key))
+
+    pagination_params = dict(offset=offset, total=total, page_size=1)
+    is_last = offset + 1 >= total
+    if not is_last:
+        pagination_params['next_offset'] = url_for('image_page', store_key=images[-1]['store_key'], r=result_set, o=offset + 1)
+    if not is_first:
+        pagination_params['prev_offset'] = url_for('image_page', store_key=images[0]['store_key'], r=result_set, o=offset - 1)
+    prop_config = config_dao.get_property_config()
+    view_props = create_view_props(image, prop_config, set(['prop_title']))
+    return render_template('image.html', image=image, view_props=view_props,
+                           in_result_set=True, result_set_title=result_set_title, **pagination_params)
 
 @app.route('/image/<store_key>/edit', methods=['POST'])
 def save_image(store_key):
@@ -278,15 +321,8 @@ def edit_image(store_key):
     view_props = create_view_props(image, prop_config)
     return render_template('edit.html', view_props=view_props, store_key=store_key)
 
-@app.route('/search/', defaults={'offset': 0})
-@app.route('/search/o<int:offset>')
-def quick_search(offset):
-    page_size = get_page_size()
-    query = request.args.get('query')
-    if query == None:
-        abort(400)
+def assemble_full_text_fields(query):
     prop_config = config_dao.get_property_config()
-    fields = []
     query_is_number = True
     try:
         int(query)
@@ -297,22 +333,36 @@ def quick_search(offset):
     for prop in prop_config:
         if query_is_number or prop['type'] != 'integer': 
             fields.append(prop['key'])
-    
+    return fields
+
+@app.route('/search/', defaults={'offset': 0})
+@app.route('/search/o<int:offset>')
+def quick_search(offset):
+    page_size = get_page_size()
+    query = request.args.get('query')
+    if query == None:
+        abort(400)
+    fields = assemble_full_text_fields(query)
     images, total = image_dao.search({'query': {'multi_match': {'query': query, 'fields': fields}}}, offset, page_size)
     return render_image_list(images, 'search.html', partial(url_for, 'quick_search', query=query),
-                             offset, page_size, total, {'search_title': 'Volltextsuche: ' + query})
+                             offset, page_size, total, {'search_title': 'Volltextsuche: ' + query,
+                                                        'query_name': 'search:' + query})
+
+def human_name(property_key):
+    for prop_config in config_dao.get_property_config():
+        if prop_config['key'] == property_key:
+            return prop_config['human_' + config['language']]
+    raise ValueError('not a valid property name')
 
 @app.route('/browse/<key>/<value>/', defaults={'offset': 0})
 @app.route('/browse/<key>/<value>/o<int:offset>')
 def browse(key, value, offset):
     page_size = get_page_size()
-    images, total = image_dao.search({'query': {'match': {key: {'query': value, 'operator': 'and'}}}}, offset, page_size)
-    category_name = ''
-    for prop_config in config_dao.get_property_config():
-        if prop_config['key'] == key:
-            category_name = prop_config['human_' + config['language']]
+    images, total = image_dao.browse(key, value, offset, page_size)
+    category_name = human_name(key)
     return render_image_list(images, 'search.html', partial(url_for, 'browse', key=key, value=value),
-                             offset, page_size, total, {'search_title': '%s: %s' % (category_name, value)})
+                             offset, page_size, total, {'search_title': '%s: %s' % (category_name, value),
+                                                        'query_name': 'browse:%s:%s' % (key, value)})
 
 @app.route('/image/<store_key>/delete', methods=['POST'])
 def delete_image(store_key):
