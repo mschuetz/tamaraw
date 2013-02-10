@@ -119,9 +119,10 @@
 {% macro image_list(images, paging_target, prev_offset, next_offset) %}
 {% for row in images|batch(4) %}
 <ul class="thumbnails">
+	{% set outer_index = loop.index0 %}
 	{% for image in row %}
  	<li class="span3">
-	<a href="{{ url_for('image_page', store_key=image.store_key, r=query_name, o=offset + loop.index0) }}"> 		
+	<a href="{{ url_for('image_page', store_key=image.store_key, r=query_name, o=offset + loop.index0 + outer_index * 4) }}"> 		
 		<div class="thumbnail">
 			<img class="img-rounded" src="{{ url_for('get_image', store_key=image.store_key, x=400, y=300) }}"/>
 			<p>{{ image.prop_title }}</p>
