@@ -47,6 +47,9 @@
 </div>
 
 <h3>{{image.prop_title}}</h3>
+{% if in_result_set %}
+<p>in {{ result_set_title }}</p>
+{% endif %}
 <div class="row">
 	<div class="span6">
 		<dl class="dl-horizontal">
@@ -97,4 +100,7 @@
 		</div>
 	</div>
 </div>
+{% if in_result_set %}
+{% call pager('') %}{%endcall%}
+{% endif %}
 {% endblock %}
