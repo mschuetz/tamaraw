@@ -255,7 +255,8 @@ def image_page_in_result(store_key, result_set, offset):
     pagination_params = dict(offset=offset, total=total, page_size=1)
     is_last = offset + 1 >= total
     if not is_last:
-        pagination_params['next_offset'] = url_for('image_page', store_key=images[-1]['store_key'], r=result_set, o=offset + 1)
+        pagination_params['next_offset'] = url_for('image_page', store_key=images[1 + int(not is_first)]['store_key'],
+                                                   r=result_set, o=offset + 1)
     if not is_first:
         pagination_params['prev_offset'] = url_for('image_page', store_key=images[0]['store_key'], r=result_set, o=offset - 1)
     prop_config = config_dao.get_property_config()
