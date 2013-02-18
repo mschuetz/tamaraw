@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block body %}
+
+{% call db_navbar('browse') %}{%endcall%}
+<section>
+	<ul>
+	{% for category in categories %}
+		<li><a href="{{url_for('browse_facets', key=category.key)}}">
+			{{category.human_name}}
+		</a></li>
+		{% if current_category and category.key==current_category.key%}
+			<ul>
+			{% for facet in facets %}
+				<li><a href="{{url_for('browse', key=category.key, value=facet)}}">{{facet}}</a></li>
+			{% endfor %}
+			</ul>
+		{% endif%}
+	{% endfor %}
+	</ul>
+</section>
+{% endblock %}

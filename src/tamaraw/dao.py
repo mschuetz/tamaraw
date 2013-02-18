@@ -102,6 +102,11 @@ class ImageDao:
     @contract(offset='int,>=0', page_size='int,>=1')
     def browse(self, key, value, offset, page_size):
         return self.search({'query': {'match': {key: {'query': value, 'operator': 'and'}}}}, offset, page_size)
+
+    def get_facets(self, *keys):
+        facet_request = dict([(key, {'terms': {'field': key}}) for key in keys ])
+        _, _, facets = self.search({'query': {'match_all': {}}, 'facets': facet_request}, 0, 1)
+        return facets
         
     def get(self, store_key):
         check_store_key(store_key)

@@ -10,6 +10,7 @@ from datetime import datetime
 from dateutil import tz
 from jinja2 import TemplateNotFound
 from functools import partial 
+from contracts import contract
 
 import dao
 from storage import LocalStore, SimpleS3Store, FileCache
@@ -358,13 +359,36 @@ def human_name(property_key):
             return prop_config['human_' + config['language']]
     raise ValueError('not a valid property name')
 
+@contract(returns="list(dict)")
+def get_categories():
+    props = config_dao.get_property_config()
+    return [dict(key=prop['key'], human_name=prop['human_' + config['language']])
+            for prop in props if prop['use_for_browse']]
+
+@app.route('/browse/')
+def browse_overview():
+    return render_template('browse_overview.html', categories=get_categories())
+
+@app.route('/browse/<key>')
+def browse_facets(key):
+    current = dict(key=key, human_name=human_name(key))
+    facet_request = {}
+    for prop in config_dao.get_property_config():
+        facet_key = prop['key']
+        if facet_key != key:
+            facet_request[facet_key] = {'terms': {'field': facet_key}}
+
+    facets = image_dao.get_facets(key)
+    # raise Exception
+    return render_template('browse_overview.html', categories=get_categories(), current_category=current, facets=facets[key])
+
 @app.route('/browse/<key>/<value>/', defaults={'offset': 0})
 @app.route('/browse/<key>/<value>/o<int:offset>')
 def browse(key, value, offset):
     page_size = get_page_size()
     images, total = image_dao.browse(key, value, offset, page_size)
     category_name = human_name(key)
-    return render_image_list(images, 'search.html', partial(url_for, 'browse', key=key, value=value),
+    return render_image_list(images, 'browse.html', partial(url_for, 'browse', key=key, value=value),
                              offset, page_size, total, {'search_title': '%s: %s' % (category_name, value),
                                                         'query_name': 'browse:%s:%s' % (key, value)})
 
