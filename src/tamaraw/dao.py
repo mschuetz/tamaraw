@@ -102,6 +102,11 @@ class ImageDao:
     @contract(offset='int,>=0', page_size='int,>=1')
     def browse(self, key, value, offset, page_size):
         return self.search({'query': {'match': {key: {'query': value, 'operator': 'and'}}}}, offset, page_size)
+
+    def get_facets(self, *keys):
+        facet_request = dict([(key, {'terms': {'field': key}}) for key in keys ])
+        _, _, facets = self.search({'query': {'match_all': {}}, 'facets': facet_request}, 0, 1)
+        return facets
         
     def get(self, store_key):
         check_store_key(store_key)
@@ -113,13 +118,11 @@ class ImageDao:
     # TODO how cam i assure that it's either str or unicode? pycontracts doesn't know basestring
     # @contract(upload_group='str[>0]')
     def create(self, upload_group, store_key, original_filename=None, **properties):
-        check_store_key(store_key)
-        self.es.put("%s/image/%s" % (self.indexname, store_key),
-                    data=dict(original_filename=original_filename,
-                              upload_group=upload_group,
-                              created_at=datetime.now(tz.gettz()),
-                              updated_at=datetime.now(tz.gettz()),
-                              **properties))
+        self.put(store_key, dict(original_filename=original_filename,
+                                 upload_group=upload_group,
+                                 created_at=datetime.now(tz.gettz()),
+                                 updated_at=datetime.now(tz.gettz()),
+                                 **properties))
 
     def put(self, store_key, image):
         check_store_key(store_key)
