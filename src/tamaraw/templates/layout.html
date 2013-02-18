@@ -34,7 +34,11 @@
 					<div class="nav-collapse">
 						<ul class="nav">
 							<li>
-								<a href="{{url_for('recent_images')}}"> Bilddatenbank </a>
+								{% if show_database_link or 'username' in session %}
+									<a href="{{url_for('recent_images')}}"> Bilddatenbank </a>
+								{% else %}
+									<a href="#"> Bilddatenbank </a>
+								{% endif %}
 							</li>
 							<li>
 								<a href="{{url_for('site', template='about')}}"> Über diese Seite </a>

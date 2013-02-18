@@ -52,7 +52,7 @@ def get_git_version():
 VERSION = get_git_version()
 
 def render_template(name, **kwargs):
-    return flask_render_template(name, app_version=VERSION, **kwargs)
+    return flask_render_template(name, app_version=VERSION, show_database_link=config['show_database_link'], **kwargs)
 
 @app.template_filter('filter')
 def template_filter(values, filter=None):
