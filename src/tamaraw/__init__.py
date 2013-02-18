@@ -279,7 +279,7 @@ def save_image(store_key):
             for i in xrange(0, 100):
                 arr_key = key + str(i)
                 if arr_key in request.form:
-                    image[key].append(request.form[arr_key])
+                    image[key].append(request.form[arr_key].strip())
         else:
             if key not in request.form or request.form[key] == '':
                 image[key] = None
@@ -290,7 +290,7 @@ def save_image(store_key):
                     flash('%s must be of type %s' % (prop['human_' + config['language']], prop['type']), 'alert-error')
                     return_to_edit = True
             else:
-                image[key] = request.form[key]
+                image[key] = request.form[key].strip()
     if return_to_edit:
         view_props = create_view_props(image, prop_config)
         return render_template('edit.html', view_props=view_props, store_key=store_key)
@@ -378,9 +378,10 @@ def browse_facets(key):
         if facet_key != key:
             facet_request[facet_key] = {'terms': {'field': facet_key}}
 
-    facets = image_dao.get_facets(key)
+    facets = [dict(term=k, count=v) for k, v in image_dao.get_facets(key)[key].iteritems() if k != '']
+    facets.sort(lambda f1, f2 : cmp(f1['term'], f2['term']))
     # raise Exception
-    return render_template('browse_overview.html', categories=get_categories(), current_category=current, facets=facets[key])
+    return render_template('browse_overview.html', categories=get_categories(), current_category=current, facets=facets)
 
 @app.route('/browse/<key>/<value>/', defaults={'offset': 0})
 @app.route('/browse/<key>/<value>/o<int:offset>')
