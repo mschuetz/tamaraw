@@ -378,7 +378,8 @@ def browse_facets(key):
         if facet_key != key:
             facet_request[facet_key] = {'terms': {'field': facet_key}}
 
-    facets = [dict(term=k, count=v) for k, v in image_dao.get_facets(key)[key].iteritems()]
+    facets = [dict(term=k, count=v) for k, v in image_dao.get_facets(key)[key].iteritems() if k != '']
+    facets.sort(lambda f1, f2 : cmp(f1['term'], f2['term']))
     # raise Exception
     return render_template('browse_overview.html', categories=get_categories(), current_category=current, facets=facets)
 
