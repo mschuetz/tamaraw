@@ -11,7 +11,7 @@
 		{% if current_category and category.key==current_category.key%}
 			<ul>
 			{% for facet in facets %}
-				<li><a href="{{url_for('browse', key=category.key, value=facet)}}">{{facet}}</a></li>
+				<li><a href="{{url_for('browse', key=category.key, value=facet.term)}}">{{facet.term}} ({{facet.count}})</a></li>
 			{% endfor %}
 			</ul>
 		{% endif%}

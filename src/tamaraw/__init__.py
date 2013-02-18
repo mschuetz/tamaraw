@@ -378,9 +378,9 @@ def browse_facets(key):
         if facet_key != key:
             facet_request[facet_key] = {'terms': {'field': facet_key}}
 
-    facets = image_dao.get_facets(key)
+    facets = [dict(term=k, count=v) for k, v in image_dao.get_facets(key)[key].iteritems()]
     # raise Exception
-    return render_template('browse_overview.html', categories=get_categories(), current_category=current, facets=facets[key])
+    return render_template('browse_overview.html', categories=get_categories(), current_category=current, facets=facets)
 
 @app.route('/browse/<key>/<value>/', defaults={'offset': 0})
 @app.route('/browse/<key>/<value>/o<int:offset>')
