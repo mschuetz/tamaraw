@@ -89,7 +89,9 @@
 			<a href="{{url_for('edit_image', store_key=image.store_key)}}" class="btn btn-primary span1"> Edit </a>
 			<a href="#deleteDialog" data-toggle="modal" class="span1 btn btn-danger"> Delete </a>
 		{% endif %}
-		<a href="#commentDialog" data-toggle="modal" class="span1 btn"> Kommentieren </a>
+		<span class="span1">
+			<a href="#commentDialog" data-toggle="modal" class="btn"> Kommentieren </a>
+		</span>
 	</div>
 	<div class="span6">
 		<div class="thumbnail">
