@@ -383,8 +383,8 @@ def browse_facets(key):
     # raise Exception
     return render_template('browse_overview.html', categories=get_categories(), current_category=current, facets=facets)
 
-@app.route('/browse/<key>/<value>/', defaults={'offset': 0})
-@app.route('/browse/<key>/<value>/o<int:offset>')
+@app.route('/browse/<key>/<path:value>/', defaults={'offset': 0})
+@app.route('/browse/<key>/<path:value>/o<int:offset>')
 def browse(key, value, offset):
     page_size = get_page_size()
     images, total = image_dao.browse(key, value, offset, page_size)
