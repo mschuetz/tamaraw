@@ -369,8 +369,9 @@ def get_categories():
 def browse_overview():
     return render_template('browse_overview.html', categories=get_categories())
 
-@app.route('/browse/<key>')
-def browse_facets(key):
+@app.route('/browse/<short_key>')
+def browse_facets(short_key):
+    key = 'prop_' + short_key
     current = dict(key=key, human_name=human_name(key))
     facet_request = {}
     for prop in config_dao.get_property_config():
@@ -383,13 +384,14 @@ def browse_facets(key):
     # raise Exception
     return render_template('browse_overview.html', categories=get_categories(), current_category=current, facets=facets)
 
-@app.route('/browse/<key>/<value>/', defaults={'offset': 0})
-@app.route('/browse/<key>/<value>/o<int:offset>')
-def browse(key, value, offset):
+@app.route('/browse/<short_key>/<path:value>/', defaults={'offset': 0})
+@app.route('/browse/<short_key>/<path:value>/o<int:offset>')
+def browse(short_key, value, offset):
+    key = 'prop_' + short_key
     page_size = get_page_size()
     images, total = image_dao.browse(key, value, offset, page_size)
     category_name = human_name(key)
-    return render_image_list(images, 'browse.html', partial(url_for, 'browse', key=key, value=value),
+    return render_image_list(images, 'browse.html', partial(url_for, 'browse', short_key=short_key, value=value),
                              offset, page_size, total, {'search_title': '%s: %s' % (category_name, value),
                                                         'query_name': 'browse:%s:%s' % (key, value)})
 

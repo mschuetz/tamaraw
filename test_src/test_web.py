@@ -108,11 +108,11 @@ class TamarawTestCase(unittest.TestCase):
         tamaraw.image_dao.create('asdf', 'TEST2', 'foo.jpg', prop_title='baz quux',
                                  prop_tags=['alfalfa graybeard unleaded numerical schmaltz'])
         tamaraw.image_dao.refresh_indices()
-        rv = self.app.get('/browse/prop_tags/alfalfa graybeard thriller cowslip/')
+        rv = self.app.get('/browse/tags/alfalfa graybeard thriller cowslip/')
         self.assertOk(rv)
         assert 'foo bar' in rv.data
         assert 'baz quux' not in rv.data
-        rv = self.app.get('/browse/prop_tags/alfalfa graybeard unleaded numerical schmaltz/')
+        rv = self.app.get('/browse/tags/alfalfa graybeard unleaded numerical schmaltz/')
         self.assertOk(rv)
         assert 'foo bar' not in rv.data
         assert 'baz quux' in rv.data
