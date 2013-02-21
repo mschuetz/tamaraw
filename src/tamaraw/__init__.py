@@ -11,6 +11,8 @@ from dateutil import tz
 from jinja2 import TemplateNotFound
 from functools import partial 
 from contracts import contract
+from flask import Markup
+import markdown
 
 import dao
 from storage import LocalStore, SimpleS3Store, FileCache
@@ -20,6 +22,7 @@ from util import load_config
 config = load_config()
 
 app = Flask('tamaraw')
+
 app.config['SECRET_KEY'] = str(config['session_secret'])
 
 if config['store'] == 'simples3':
@@ -54,6 +57,12 @@ VERSION = get_git_version()
 
 def render_template(name, **kwargs):
     return flask_render_template(name, app_version=VERSION, show_database_link=config['show_database_link'], **kwargs)
+
+@app.template_filter('markdown')
+def template_markdown(value):
+    if "\n" in unicode(value):
+        return Markup(markdown.markdown(unicode(value)))
+    return value 
 
 @app.template_filter('filter')
 def template_filter(values, filter=None):

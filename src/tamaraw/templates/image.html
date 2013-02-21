@@ -62,7 +62,7 @@
 					<ul class="property_list">
 					{% for item in prop.value %}
 						<li>
-							{{item}}
+							{{item | markdown}}
 							{% if item and prop.use_for_browse %}
 							<a href="{{url_for('browse', short_key=prop.key | replace('prop_', ''), value=item)}}">
 								<i class="icon-search icon-gray"></i>
@@ -72,7 +72,7 @@
 					{% endfor %}
 					</ul>
 				{% else %}
-					{{prop.value or "&nbsp;"|safe}}
+					{{(prop.value or "&nbsp;") | markdown}}
 					{% if prop.value and prop.use_for_browse %}
 					<a href="{{url_for('browse', short_key=prop.key | replace('prop_', ''), value=prop.value)}}">
 						<i class="icon-search icon-gray "></i>
