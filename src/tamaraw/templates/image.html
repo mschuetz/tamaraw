@@ -72,7 +72,11 @@
 					{% endfor %}
 					</ul>
 				{% else %}
-					{{(prop.value or "&nbsp;") | markdown}}
+					{% if prop.value %}
+						{{prop.value | markdown}}
+					{% else %}
+						&nbsp;
+					{% endif %}
 					{% if prop.value and prop.use_for_browse %}
 					<a href="{{url_for('browse', short_key=prop.key | replace('prop_', ''), value=prop.value)}}">
 						<i class="icon-search icon-gray "></i>
