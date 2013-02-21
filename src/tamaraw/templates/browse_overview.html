@@ -5,13 +5,13 @@
 <section>
 	<ul>
 	{% for category in categories %}
-		<li><a href="{{url_for('browse_facets', key=category.key)}}">
+		<li><a href="{{url_for('browse_facets', short_key=category.key | replace('prop_', ''))}}">
 			{{category.human_name}}
 		</a></li>
 		{% if current_category and category.key==current_category.key%}
 			<ul>
 			{% for facet in facets %}
-				<li><a href="{{url_for('browse', key=category.key, value=facet.term)}}">{{facet.term}} ({{facet.count}})</a></li>
+				<li><a href="{{url_for('browse', short_key=category.key | replace('prop_', ''), value=facet.term)}}">{{facet.term}} ({{facet.count}})</a></li>
 			{% endfor %}
 			</ul>
 		{% endif%}
