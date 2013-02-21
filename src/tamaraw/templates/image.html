@@ -72,10 +72,10 @@
 					{% endfor %}
 					</ul>
 				{% else %}
-					{% if prop.value %}
+					{% if prop.type=='text' %}
 						{{prop.value | markdown}}
 					{% else %}
-						&nbsp;
+						{{prop.value or ("&nbsp;") | safe}}
 					{% endif %}
 					{% if prop.value and prop.use_for_browse %}
 					<a href="{{url_for('browse', short_key=prop.key | replace('prop_', ''), value=prop.value)}}">
