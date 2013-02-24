@@ -56,7 +56,8 @@ def get_git_version():
 VERSION = get_git_version()
 
 def render_template(name, **kwargs):
-    return flask_render_template(name, app_version=VERSION, show_database_link=config['show_database_link'], **kwargs)
+    return flask_render_template(name, app_version=VERSION, show_database_link=config['show_database_link'],
+                                 categories=get_categories(), **kwargs)
 
 @app.template_filter('markdown')
 def template_markdown(value):
@@ -376,7 +377,7 @@ def get_categories():
 
 @app.route('/browse/')
 def browse_overview():
-    return render_template('browse_overview.html', categories=get_categories())
+    return render_template('browse_overview.html')
 
 @app.route('/browse/<short_key>')
 def browse_facets(short_key):
@@ -390,8 +391,7 @@ def browse_facets(short_key):
 
     facets = [dict(term=k, count=v) for k, v in image_dao.get_facets(key)[key].iteritems() if k != '']
     facets.sort(lambda f1, f2 : cmp(f1['term'], f2['term']))
-    # raise Exception
-    return render_template('browse_overview.html', categories=get_categories(), current_category=current, facets=facets)
+    return render_template('browse_overview.html', current_category=current, facets=facets)
 
 @app.route('/browse/<short_key>/<path:value>/', defaults={'offset': 0})
 @app.route('/browse/<short_key>/<path:value>/o<int:offset>')
