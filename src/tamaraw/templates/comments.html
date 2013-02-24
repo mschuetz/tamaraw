@@ -27,7 +27,7 @@ $(function() {
 				{% else %}
 					<span class="label label-important" id="read_{{comment._id}}">Ungelesen</span>
 				{% endif %}
-				{{comment.name}} &lt;{{comment.email}}&gt; (betrifft 
+				{{comment.created_at | date_format('%d.%m.%Y %H:%M')}} {{comment.name}} &lt;{{comment.email}}&gt; (betrifft 
 				{% if comment.store_key == 'subscribe' %}
 					Emailverteiler
 				{% else %}

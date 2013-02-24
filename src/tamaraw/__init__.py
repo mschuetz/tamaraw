@@ -54,6 +54,7 @@ def get_git_version():
     return version.replace("\n", '')
 
 VERSION = get_git_version()
+VIEW_TZ = tz.gettz(config['view_timezone'])
 
 def render_template(name, **kwargs):
     return flask_render_template(name, app_version=VERSION, show_database_link=config['show_database_link'],
@@ -75,7 +76,7 @@ def template_filter(values, filter=None):
 
 @app.template_filter('date_format')
 def template_date_format(value, format='%d.%m.%Y'):
-    return value.strftime(format)
+    return value.astimezone(VIEW_TZ).strftime(format)
 
 def linkify_image(image):
     return dict(href=url_for('get_image', store_key=image['store_key']), **image)

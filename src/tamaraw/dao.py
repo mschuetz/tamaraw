@@ -5,8 +5,18 @@ from dateutil import tz
 from contracts import contract
 from util import check_store_key
 import dateutil.parser
+
 def range_query(field, _from, to):
     return {'range': {field: {'from': _from, 'to': to}}}
+
+def map_timestamps(obj):
+    for known_timestamp in ('created_at', 'updated_at'):
+        if known_timestamp in obj:
+            try:
+                obj[known_timestamp] = dateutil.parser.parse(obj[known_timestamp])
+            except:
+                pass
+    return obj
 
 class ConfigDao:
 
@@ -55,21 +65,12 @@ class ImageDao:
         self.es = rawes.Elastic(**rawes_params)
         self.indexname = indexname
         
-    def map_timestamps(self, obj):
-        for known_timestamp in ('created_at', 'updated_at'):
-            if known_timestamp in obj:
-                try:
-                    obj[known_timestamp] = dateutil.parser.parse(obj[known_timestamp])
-                except:
-                    pass
-        return obj
-
     # @contract(rawes_result='dict(unicode: *)', returns='tuple(list, int, (None|dict)')
     @contract(rawes_result='dict(unicode: *)')
     def map_search_results(self, rawes_result):
         if not rawes_result.has_key('hits') or rawes_result['hits']['total'] == 0:
             return [], 0
-        hits = [dict(store_key=hit['_id'], **self.map_timestamps(hit['_source'])) for hit in rawes_result['hits']['hits']]
+        hits = [dict(store_key=hit['_id'], **map_timestamps(hit['_source'])) for hit in rawes_result['hits']['hits']]
         total = int(rawes_result['hits']['total'])
         if 'facets' not in rawes_result:
             return hits, total
@@ -186,7 +187,7 @@ class CommentDao:
     def map_search_results(self, rawes_result):
         if not rawes_result.has_key('hits') or rawes_result['hits']['total'] == 0:
             return [], 0
-        hits = [dict(_id=hit['_id'], **hit['_source']) for hit in rawes_result['hits']['hits']]
+        hits = [dict(_id=hit['_id'], **map_timestamps(hit['_source'])) for hit in rawes_result['hits']['hits']]
         total = int(rawes_result['hits']['total'])
         return hits, total
 
