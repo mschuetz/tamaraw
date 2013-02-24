@@ -3,18 +3,10 @@
 
 {% call db_navbar('browse') %}{%endcall%}
 <section>
+	<h3>Register: {{current_category.human_name}}</h3>
 	<ul>
-	{% for category in categories %}
-		<li><a href="{{url_for('browse_facets', short_key=category.key | replace('prop_', ''))}}">
-			{{category.human_name}}
-		</a></li>
-		{% if current_category and category.key==current_category.key%}
-			<ul>
-			{% for facet in facets %}
-				<li><a href="{{url_for('browse', short_key=category.key | replace('prop_', ''), value=facet.term)}}">{{facet.term}} ({{facet.count}})</a></li>
-			{% endfor %}
-			</ul>
-		{% endif%}
+	{% for facet in facets %}
+		<li><a href="{{url_for('browse', short_key=current_category.key | replace('prop_', ''), value=facet.term)}}">{{facet.term}} ({{facet.count}})</a></li>
 	{% endfor %}
 	</ul>
 </section>

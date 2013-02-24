@@ -81,8 +81,15 @@
 			<li {% if active=='recent_images' %}class="active"{% endif %}>
 				<a href="{{url_for('recent_images')}}">Neue Bilder</a>
 			</li>
-			<li {% if active=='browse' %}class="active"{% endif %}>
-				<a href="{{url_for('browse_overview')}}">Registersuche</a>
+			<li class="dropdown {% if active=='browse' %}active{% endif %}">
+				<a class="dropdown-toggle" data-toggle="dropdown" href="#">Registersuche <b class="caret"></b></a>
+				<ul class="dropdown-menu">
+					{% for category in categories %}
+						<li><a href="{{url_for('browse_facets', short_key=category.key | replace('prop_', ''))}}">
+							{{category.human_name}}
+						</a></li>
+					{% endfor %}
+				</ul>
 			</li>
 			{% if 'username' in session %}
 			<li {% if active=='upload' %}class="active"{% endif %}>
