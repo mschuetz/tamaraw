@@ -22,3 +22,7 @@
 .dropdown-menu > .active > a > [class*=" icon-"] {
   background-image: url("vendor/bootstrap/img/glyphicons-halflings-gray.png");
 }
+
+.small-modal {
+	width: auto;
+} 
