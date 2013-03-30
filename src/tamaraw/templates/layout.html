@@ -62,17 +62,34 @@
 						</ul>
 					</div> 
 					{% else %}
-					<form class="navbar-form pull-right" action="{{url_for('login')}}" method="post">
-						<input name="username" placeholder="Username" class="span2" type="text">
-						<input name="password" placeholder="Password" class="span2" type="password">
-						<button class="btn" type="submit">
-							Log in
-						</button>
-					</form>
+					<a class="btn pull-right" data-toggle="modal" href="#loginDialog">Login</a>
 					{% endif %}
 				</div>
 			</div>
 		</nav>
+<div id="loginDialog" class="modal small-modal hide fade container-fluid">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+			&times;
+		</button>
+		<h3>Login</h3>
+	</div>
+	<form action="{{url_for('login')}}" method="post">
+		<div class="modal-body">
+			<p>
+				<input type="text" placeholder="Username" name="username"/>
+			</p>
+			<p>
+				<input type="password" placeholder="Password" name="password"/>
+			</p>
+		</div>
+		<div class="modal-footer">
+			<button class="btn pull-left" type="submit">
+				Login
+			</button>
+		</div>
+	</form>
+</div>
 
 {% macro db_navbar(active) %}
 <nav class="navbar">
