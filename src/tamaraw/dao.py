@@ -114,7 +114,7 @@ class ImageDao:
         res = self.es.get('%s/image/%s' % (self.indexname, store_key))
         if not res['exists']:
             return None
-        return dict(store_key=store_key, **self.map_timestamps(res['_source']))
+        return dict(store_key=store_key, **map_timestamps(res['_source']))
 
     # TODO how cam i assure that it's either str or unicode? pycontracts doesn't know basestring
     # @contract(upload_group='str[>0]')
