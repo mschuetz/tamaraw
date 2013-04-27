@@ -15,7 +15,9 @@ config = {
             "timeout": 10
         },
         "indexname": "test_dao%s" % (time.time())
-    }
+    },
+    "show_database_link": True,
+    "view_timezone": "CET"
 }
 
 # first, write the config to a temp file, then make sure the config is loaded even
@@ -53,6 +55,9 @@ class TamarawTestCase(unittest.TestCase):
 
     def assertForbidden(self, rv):
         self.assertEqual('403 FORBIDDEN', rv.status)
+
+    def assertRedirect(self, rv):
+        self.assertEqual('302 FOUND', rv.status)
         
     def login_as_admin(self):
         return self.app.post('/login', data={'username': 'admin', 'password': 'asdf'},
@@ -89,6 +94,32 @@ class TamarawTestCase(unittest.TestCase):
         rv = self.app.get('/private/comments/')
         self.assertForbidden(rv)
 
+    def test_comment(self):
+        tamaraw.image_dao.create('asdf', 'TEST1', 'foo.jpg', prop_title='foo bar')
+        rv = self.app.post('/public/image/TEST1/comment', data={'real_name': 'Holden Caulfield',
+                                                                'name': '',
+                                                                'email': 'holden.caulfield@vfmac.edu',
+                                                                'text':'asdf asdf'})
+        self.assertRedirect(rv)
+        tamaraw.comment_dao.refresh_indices()
+        self.login_as_admin()
+        rv = self.app.get('/private/comments/')
+        self.assertOk(rv)
+        assert 'Holden Caulfield' in rv.data
+
+    def test_comment_invisible_captcha(self):
+        tamaraw.image_dao.create('asdf', 'TEST1', 'foo.jpg', prop_title='foo bar')
+        rv = self.app.post('/public/image/TEST1/comment', data={'name': 'Spammer',
+                                                                'real_name': 'Spammer',
+                                                                'email': 'holden.caulfield@vfmac.edu',
+                                                                'text':'asdf asdf'})
+        self.assertForbidden(rv)
+        tamaraw.comment_dao.refresh_indices()
+        self.login_as_admin()
+        rv = self.app.get('/private/comments/')
+        self.assertOk(rv)
+        assert 'Spammer' not in rv.data
+
     def test_search(self):
         tamaraw.image_dao.create('asdf', 'TEST1', 'foo.jpg', prop_title='foo bar')
         tamaraw.image_dao.create('asdf', 'TEST2', 'foo.jpg', prop_title='baz quux')
@@ -118,15 +149,29 @@ class TamarawTestCase(unittest.TestCase):
         assert 'baz quux' in rv.data
 
     def test_subscribe(self):
-        self.app.post('/public/subscribe', data={'name': 'Holden Caulfield',
-                                                 'email': 'holden.caulfield@vfmac.edu',
-                                                 'comment':'asdf asdf'})
+        rv = self.app.post('/public/subscribe', data={'real_name': 'Subscriber',
+                                                      'name': '',
+                                                      'email': 'subscriber@example.org',
+                                                      'comment':'asdf asdf'})
+        self.assertRedirect(rv)
         self.login_as_admin()
         tamaraw.image_dao.refresh_indices()
         rv = self.app.get('/private/comments/')
         self.assertOk(rv)
-        assert 'Holden Caulfield' in rv.data
-        assert 'holden.caulfield@vfmac.edu' in rv.data
+        assert 'Subscriber' in rv.data
+        assert 'subscriber@example.org' in rv.data
+
+    def test_subscribe_invisible_captcha(self):
+        rv = self.app.post('/public/subscribe', data={'real_name': 'Spam Subscriber',
+                                                 'name': 'Spam Subscriber',
+                                                 'email': 'subscriber@example.org',
+                                                 'comment':'asdf asdf'})
+        self.assertForbidden(rv)
+        self.login_as_admin()
+        tamaraw.image_dao.refresh_indices()
+        rv = self.app.get('/private/comments/')
+        self.assertOk(rv)
+        assert 'Spam Subscriber' not in rv.data
 
     def test_delete_image(self):
         self.login_as_admin()
@@ -163,8 +208,6 @@ class TamarawTestCase(unittest.TestCase):
         rv = self.app.post('/image/TEST/delete', follow_redirects=True)
         self.assertOk(rv)
         assert "ignorable error" in rv.data
-
-        
 
 if __name__ == '__main__':
     unittest.main()

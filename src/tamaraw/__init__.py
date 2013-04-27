@@ -209,7 +209,8 @@ def upload_file(upload_group):
 
 @app.route('/public/image/<store_key>/comment', methods=['POST'])
 def comment(store_key):
-    comment_dao.save(request.form['name'], request.form['email'], store_key, request.form['text'])
+    check_invisible_captcha(request.form, 'name')
+    comment_dao.save(request.form['real_name'], request.form['email'], store_key, request.form['text'])
     flash('your comment was submitted to the author', 'alert-success')
     return redirect(url_for('image_page', store_key=store_key))
 
@@ -434,9 +435,16 @@ def site(template, more=None):
     except TemplateNotFound:
         abort(404)
 
+def check_invisible_captcha(form, blank_field):
+    if request.form[blank_field] != '':
+        app.logger.info('received spam comment %s', repr(request.form))
+        abort(403)
+    
+
 @app.route('/public/subscribe', methods=['POST'])
 def subscribe():
-    comment_dao.save(request.form['name'], request.form['email'], 'subscribe', request.form['comment'])
+    check_invisible_captcha(request.form, 'name')
+    comment_dao.save(request.form['real_name'], request.form['email'], 'subscribe', request.form['comment'])
     flash(u'Vielen Dank %s, wir werden sie über die Fertigstellung der Seite per Email informieren.' % (request.form['name'],),
           'alert-success')
     return redirect(url_for('start'))
