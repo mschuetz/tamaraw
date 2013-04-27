@@ -26,3 +26,7 @@
 .small-modal {
 	width: auto;
 } 
+
+a.regular-text {
+	color: white;
+}
