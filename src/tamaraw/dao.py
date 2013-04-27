@@ -18,7 +18,12 @@ def map_timestamps(obj):
                 pass
     return obj
 
-class ConfigDao:
+class Dao(object):
+    def refresh_indices(self):
+        self.es.post("%s/_refresh" % (self.indexname))
+
+
+class ConfigDao(Dao):
 
     DEFAULT_PROPS = [
                      {u"key": u"prop_title", u"human_de": u"Kurztitel", u"default": True, u"type": 'string', u"use_for_browse": False},
@@ -60,7 +65,7 @@ class ConfigDao:
         else:
             return res['_source']['obj']
 
-class ImageDao:
+class ImageDao(Dao):
     def __init__(self, rawes_params, indexname):
         self.es = rawes.Elastic(**rawes_params)
         self.indexname = indexname
@@ -137,10 +142,7 @@ class ImageDao:
         check_store_key(store_key)
         self.es.delete("%s/image/%s" % (self.indexname, store_key))
 
-    def refresh_indices(self):
-        self.es.post("%s/_refresh" % (self.indexname))
-
-class UserDao:
+class UserDao(Dao):
     import passlib.hash
     def __init__(self, rawes_params, indexname, hash_algo=passlib.hash.pbkdf2_sha256):
         self.es = rawes.Elastic(**rawes_params)
@@ -161,7 +163,7 @@ class UserDao:
 class InvalidCommentId(Exception):
     pass
 
-class CommentDao:
+class CommentDao(Dao):
     def __init__(self, rawes_params, indexname):
         self.es = rawes.Elastic(**rawes_params)
         self.indexname = indexname
