@@ -435,7 +435,7 @@ def site(template, more=None):
     except TemplateNotFound:
         abort(404)
 
-def check_invisible_captcha(form, blank_field):
+def check_invisible_captcha(blank_field):
     if request.form[blank_field] != '':
         app.logger.info('received spam comment %s', repr(request.form))
         abort(403)
@@ -443,7 +443,7 @@ def check_invisible_captcha(form, blank_field):
 
 @app.route('/public/subscribe', methods=['POST'])
 def subscribe():
-    check_invisible_captcha(request.form, 'name')
+    check_invisible_captcha('name')
     comment_dao.save(request.form['real_name'], request.form['email'], 'subscribe', request.form['comment'])
     flash(u'Vielen Dank %s, wir werden sie über die Fertigstellung der Seite per Email informieren.' % (request.form['name'],),
           'alert-success')
