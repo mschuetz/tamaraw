@@ -209,7 +209,7 @@ def upload_file(upload_group):
 
 @app.route('/public/image/<store_key>/comment', methods=['POST'])
 def comment(store_key):
-    check_invisible_captcha(request.form, 'name')
+    check_invisible_captcha('name')
     comment_dao.save(request.form['real_name'], request.form['email'], store_key, request.form['text'])
     flash('your comment was submitted to the author', 'alert-success')
     return redirect(url_for('image_page', store_key=store_key))
