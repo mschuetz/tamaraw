@@ -153,10 +153,6 @@ class SimpleS3Store(Store):
     def thumbnail_key(self, key, size):
         return key + ('_%sx%s' % (size))
     
-    def default_headers(self, filename):
-        return {'Content-Disposition': 'inline; filename=%s' % (filename,),
-                'Cache-Control': 'public max-age=86400'}
-
     def create_thumbnail(self, key, size):
         b = self.bucket()
         s3_key = self.prefix + key
