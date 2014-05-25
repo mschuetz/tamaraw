@@ -48,7 +48,7 @@ class TestImageDao(unittest.TestCase):
         self.dao.create(upload_group, unique_id(), "foo2.jpg", **{'prop$foo': 'baz'})
         self.dao.refresh_indices()
         facets = self.dao.get_facets('prop$foo')
-        self.assertEquals(sorted(facets['prop$foo']), [u'bar', u'baz'])
+        self.assertEquals(facets['prop$foo'], {u'bar':1, u'baz':1})
 
 if __name__ == '__main__':
     unittest.main()
