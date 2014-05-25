@@ -70,8 +70,7 @@ class ImageDao(Dao):
         self.es = rawes.Elastic(**rawes_params)
         self.indexname = indexname
         
-    # @contract(rawes_result='dict(unicode: *)', returns='tuple(list, int, (None|dict)')
-    @contract(rawes_result='dict(unicode: *)')
+    @contract(rawes_result='dict(unicode: *)', returns='tuple(list, int)')
     def map_search_results(self, rawes_result):
         if not rawes_result.has_key('hits') or rawes_result['hits']['total'] == 0:
             return [], 0
@@ -79,13 +78,16 @@ class ImageDao(Dao):
         total = int(rawes_result['hits']['total'])
         if 'facets' not in rawes_result:
             return hits, total
+
+    @contract(rawes_result='dict(unicode: *)', returns='dict(unicode: *)')
+    def map_facet_results(self, rawes_result):
         facets = {}
         for facet_key, facet in rawes_result['facets'].iteritems():
             terms = {}
             for term in facet['terms']:
                 terms[term['term']] = term['count']
             facets[facet_key] = terms 
-        return hits, total, facets
+        return facets
 
     @contract(data='dict(str: *)', offset='int,>=0', page_size='int,>=1')
     def search(self, data, offset, page_size, additional_params=None):
@@ -109,10 +111,11 @@ class ImageDao(Dao):
     def browse(self, key, value, offset, page_size):
         return self.search({'query': {'match': {key: {'query': value, 'operator': 'and'}}}}, offset, page_size)
 
+    @contract(returns='dict(unicode: *)')
     def get_facets(self, *keys):
         facet_request = dict([(key, {'terms': {"script_field" : "_source.%s" % (key,), 'size': 2 ** 16}, 'global': True}) for key in keys ])
-        _, _, facets = self.search({'facets': facet_request}, 0, 1)
-        return facets
+        res = self.es.get('%s/image/_search' % (self.indexname), data={'facets': facet_request}, params={'from': 0, 'size': 1})
+        return self.map_facet_results(res)
         
     def get(self, store_key):
         check_store_key(store_key)
