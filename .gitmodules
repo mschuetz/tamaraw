@@ -1,0 +1,3 @@
+[submodule "src/tamaraw/static/vendor/pdf.js"]
+	path = src/tamaraw/static/vendor/pdf.js
+	url = /Users/matze/src/pdf.js
