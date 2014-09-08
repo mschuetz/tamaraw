@@ -214,6 +214,23 @@ def comment(store_key):
     flash('your comment was submitted to the author', 'alert-success')
     return redirect(url_for('image_page', store_key=store_key))
 
+@app.route('/documentmock/<store_key>')
+def document_mock(store_key):
+    result_set = request.args.get('r')
+    if result_set:
+        return image_page_in_result(store_key, result_set, int(request.args.get('o')))
+    else:
+        try:
+            image = image_dao.get(store_key)
+            if image == None:
+                abort(404)
+            prop_config = config_dao.get_property_config()
+            view_props = create_view_props(image, prop_config, set(['prop_title']))
+            return render_template('document_mockup2.html', image=image, view_props=view_props)
+        except InvalidStoreKey:
+            app.logger.warning('invalid store_key %s', repr(store_key))
+            abort(400)
+
 @app.route('/image/<store_key>')
 def image_page(store_key):
     result_set = request.args.get('r')

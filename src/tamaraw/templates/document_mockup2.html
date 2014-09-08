@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<title>Bilderarchiv Rinderanspannung</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="generator" content="tamaraw-24-29-g2efc16d">
+		<link href="/static/vendor/bootstrap3/css/bootstrap.min.css" rel="stylesheet">
+		<link href="/static/vendor/bootstrap3/css/bootstrap-theme.min.css" rel="stylesheet">
+		<link href="/static/tamaraw.css" rel="stylesheet">
+        <script src="/static/vendor/jquery-1.11.1.min.js"></script>
+        <script src="/static/vendor/bootstrap3/js/bootstrap.min.js"></script>
+		<script src="/static/vendor/underscore-min.js"></script>
+		<style>
+			body {
+				padding-top: 60px; /* 60px to make the container go all the way
+				 to the bottom of the topbar */
+			}
+		</style>
+		<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+		<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js">
+		</script>
+		<![endif]-->
+
+	</head>
+
+	<body>
+
+<nav class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">Bilderarchiv Rinderanspannung</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="/recent/">Bilddatenbank</a></li>
+        <li><a href="/about">Über diese Seite</a></li>
+        <li><a href="/imprint">Impressum</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a class="btn" data-toggle="modal" href="#loginDialog">Login</a></li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+<nav class="navbar navbar-default" role="navigation">
+  <div class="container-fluid">
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
+		<ul class="nav navbar-nav">
+			<li >
+				<a href="/recent/">Neue Bilder</a>
+			</li>
+			<li class="dropdown ">
+				<a class="dropdown-toggle" data-toggle="dropdown" href="#">Registersuche <b class="caret"></b></a>
+				<ul class="dropdown-menu">
+						<li><a href="/browse/source">
+							Quelle
+						</a></li>
+
+						<li><a href="/browse/rights">
+							Bildrechte
+						</a></li>
+
+						<li><a href="/browse/master">
+							Vorlage
+						</a></li>
+
+						<li><a href="/browse/creation_year">
+							Aufnahmejahr
+						</a></li>
+
+						<li><a href="/browse/location">
+							Aufnahmeort
+						</a></li>
+
+						<li><a href="/browse/tags">
+							Sachbegriffe
+						</a></li>
+				</ul>
+			</li>
+
+            <form class="navbar-form navbar-left" role="search" method="get" action="/search/">
+                <div class="form-group">
+                    <input name="query" type="text" class="form-control" placeholder="Volltextsuche">
+                </div>
+                <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>
+            </form>
+		</ul>
+	</div>
+  </div>
+</nav>
+
+<div class="container-fluid">
+<h3>A Fast, Minimal Memory, Consistent Hash Algorithm</h3>
+
+
+    <div class="row">
+        <div class="col-md-6">
+<dl class="dl-horizontal">
+
+			<dt>
+				Quelle
+			</dt>
+			<dd>
+
+
+						arxiv.org
+
+
+					<a href="/browse/source/arxiv.org/">
+						<span class="glyphicon glyphicon-search"></span>
+					</a>
+
+
+			</dd>
+
+			<dt>
+				Autor
+			</dt>
+			<dd>
+
+
+						John Lamping, Eric Veach
+
+
+					<a href="/browse/rights/lamping-veach/">
+						<span class="glyphicon glyphicon-search"></span>
+					</a>
+
+
+			</dd>
+
+			<dt>
+				Beschreibung
+			</dt>
+			<dd>
+
+     We present jump consistent hash, a fast, minimal memory, consistent hash algorithm that can be expressed in about 5 lines of code. In comparison to the algorithm of Karger et al., jump consistent hash requires no storage, is faster, and does a better job of evenly dividing the key space among the buckets and of evenly dividing the workload when the number of buckets changes. Its main limitation is that the buckets must be numbered sequentially, which makes it more suitable for data storage applications than for distributed web caching.
+
+			</dd>
+
+			<dt>
+				Veröffentlichungsjahr
+			</dt>
+			<dd>
+
+
+						2014
+
+
+					<a href="/browse/creation_year/2014/">
+						<span class="glyphicon glyphicon-search"></span>
+					</a>
+
+
+			</dd>
+
+<!--			<dt>
+				Aufnahmeort
+			</dt>
+			<dd>
+
+
+						Schwarzwald
+
+
+					<a href="/browse/location/Schwarzwald/">
+						<i class="icon-search icon-gray "></i>
+					</a>
+
+
+			</dd>-->
+
+			<dt>
+				Sachbegriffe
+			</dt>
+			<dd>
+
+					<ul class="property_list">
+
+						<li>
+							Consistent Hashing
+
+							<a href="/browse/tags/Consistent Hashing/">
+								<span class="glyphicon glyphicon-search"></span>
+							</a>
+
+						</li>
+
+						<li>
+							Algorithms
+
+							<a href="/browse/tags/algorithms/">
+								<span class="glyphicon glyphicon-search"></span>
+							</a>
+
+						</li>
+
+						<li>
+							system design
+
+							<a href="/browse/tags/system design/">
+								<span class="glyphicon glyphicon-search"></span>
+							</a>
+
+						</li>
+
+					</ul>
+			</dd>
+
+<!--			<dt>Empfohlene Zitierweise</dt>
+			<dd>„Ochsengespann im Karrengeschirr mit Dreipolsterkummet, Schwarzwald, 1936“
+				in: Bilderarchiv Rinderanspannung &lt;http://rinderanspannung.de/image/VsmhTqt2yFY_&gt; (Stand: 14.01.2013)</dd>-->
+		</dl>
+        </div>
+
+        <div class="col-md-6">
+            <div class="embed-responsive" style="padding-bottom: 100%;">
+            <iframe class="embed-responsive-item" src="/static/vendor/pdf.js/web/viewer.html?file=/static/1406.2294.pdf"></iframe>
+            </div>
+
+			<p>
+				hinzugefügt am 02.01.2013, <a title="Original" target="_blank" href="/static/1406.2294.pdf"> <span class="glyphicon glyphicon-download"></span> Download PDF </a>
+			</p>
+        </div>
+    </div>
+</div>
+
+
+	</body>
+
+</html>
