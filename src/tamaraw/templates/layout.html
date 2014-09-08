@@ -6,8 +6,8 @@
 		<title>Bilderarchiv Rinderanspannung</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta name="generator" content="tamaraw-{{ app_version }}">
-		<link href="{{url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
-		<link href="{{url_for('static', filename='vendor/bootstrap/css/bootstrap-responsive.min.css') }}" rel="stylesheet">
+		<link href="{{url_for('static', filename='vendor/bootstrap3/css/bootstrap.min.css') }}" rel="stylesheet">
+		<link href="{{url_for('static', filename='vendor/bootstrap3/css/bootstrap-theme_.min.css') }}" rel="stylesheet">
 		<link href="{{url_for('static', filename='tamaraw.css') }}" rel="stylesheet">
 		<style>
 			body {
@@ -20,105 +20,128 @@
 		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js">
 		</script>
 		<![endif]-->
+		<script src="{{url_for('static', filename='vendor/jquery-1.11.1.min.js') }}"></script>
+		<script src="{{url_for('static', filename='vendor/underscore-min.js') }}"></script>
+		<script src="{{url_for('static', filename='vendor/bootstrap/js/bootstrap.min.js') }}"></script>
 		{% block head %}{% endblock %}
 	</head>
 
 	<body>
-		<script src="{{url_for('static', filename='vendor/jquery-1.8.3.min.js') }}"></script>
-		<script src="{{url_for('static', filename='vendor/underscore-min.js') }}"></script>
-		<nav class="navbar navbar-fixed-top navbar-inverse">
-			<div class="navbar-inner">
-				<div class="container-fluid">
-					<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"> <span class="icon-bar"> </span> <span class="icon-bar"> </span> <span class="icon-bar"> </span> </a>
-					<a class="brand" href="/"> Bilderarchiv Rinderanspannung </a>
-					<div class="nav-collapse">
-						<ul class="nav">
-							<li>
-								{% if show_database_link or 'username' in session %}
-									<a href="{{url_for('recent_images')}}"> Bilddatenbank </a>
-								{% else %}
-									<a href="#"> Bilddatenbank </a>
-								{% endif %}
-							</li>
-							<li>
-								<a href="{{url_for('site', template='about')}}"> Über diese Seite </a>
-							</li>
-							<li>
-								<a href="{{url_for('site', template='imprint')}}"> Impressum </a>
-							</li>
-						</ul>
-					</div>
+
+        <nav class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+            <div class="container-fluid">
+                <!-- Brand and toggle get grouped for better mobile display -->
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                            data-target="#main-navbar-collapse-1">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand active" href="/">Bilderarchiv Rinderanspannung</a>
+                </div>
+
+                <!-- Collect the nav links, forms, and other content for toggling -->
+                <div class="collapse navbar-collapse" id="main-navbar-collapse-1">
+                    <ul class="nav navbar-nav">
+                        <li>
+                            {% if show_database_link or 'username' in session %}
+                            <a href="{{url_for('recent_images')}}"> Bilddatenbank </a>
+                            {% else %}
+                            <a href="#"> Bilddatenbank </a>
+                            {% endif %}
+                        </li>
+                        <li>
+                            <a href="{{url_for('site', template='about')}}"> Über diese Seite </a>
+                        </li>
+                        <li>
+                            <a href="{{url_for('site', template='imprint')}}"> Impressum </a>
+                        </li>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
 					{% if 'username' in session %}
-					<div class="btn-group pull-right">
-						<a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-user" /></i>&nbsp;{{session['username']}}</a>
-						<ul class="dropdown-menu">
-							<li>
-								<a href="{{url_for('comments')}}">Kommentare</a>
-							</li>
-							<li class="divider"></li>
-							<li>
-								<a href="{{url_for('logout')}}">Logout</a>
-							</li>
-						</ul>
-					</div> 
+                        <li class="dropown">
+                            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-user" /></i>&nbsp;{{session['username']}}</a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a href="{{url_for('comments')}}">Kommentare</a>
+                                </li>
+                                <li class="divider"></li>
+                                <li>
+                                    <a href="{{url_for('logout')}}">Logout</a>
+                                </li>
+                            </ul>
+                        </li>
 					{% else %}
-					<a class="btn pull-right" data-toggle="modal" href="#loginDialog">Login</a>
+                    <li><button class="btn navbar-btn btn-sm" data-toggle="modal" data-target="#loginDialog">Login</button></li>
 					{% endif %}
-				</div>
-			</div>
-		</nav>
-<div id="loginDialog" class="modal small-modal hide fade container-fluid">
-	<div class="modal-header">
-		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-			&times;
-		</button>
-		<h3>Login</h3>
-	</div>
-	<form action="{{url_for('login')}}" method="post">
-		<div class="modal-body">
-			<p>
-				<input type="text" placeholder="Username" name="username"/>
-			</p>
-			<p>
-				<input type="password" placeholder="Password" name="password"/>
-			</p>
-		</div>
-		<div class="modal-footer">
-			<button class="btn pull-left" type="submit">
-				Login
-			</button>
-		</div>
-	</form>
-</div>
+                    </ul>
+                </div>
+                <!-- /.navbar-collapse -->
+            </div>
+            <!-- /.container-fluid -->
+        </nav>
+
+        <div id="loginDialog" class="modal small-modal hide fade container-fluid">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h3>Login</h3>
+            </div>
+            <form action="{{url_for('login')}}" method="post">
+                <div class="modal-body">
+                    <p>
+                        <input type="text" placeholder="Username" name="username"/>
+                    </p>
+                    <p>
+                        <input type="password" placeholder="Password" name="password"/>
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn pull-left" type="submit">
+                        Login
+                    </button>
+                </div>
+            </form>
+        </div>
 
 {% macro db_navbar(active) %}
-<nav class="navbar">
-	<div class="navbar-inner">
-		<ul class="nav">
-			<li {% if active=='recent_images' %}class="active"{% endif %}>
-				<a href="{{url_for('recent_images')}}">Neue Bilder</a>
-			</li>
-			<li class="dropdown {% if active=='browse' %}active{% endif %}">
-				<a class="dropdown-toggle" data-toggle="dropdown" href="#">Registersuche <b class="caret"></b></a>
-				<ul class="dropdown-menu">
-					{% for category in categories %}
-						<li><a href="{{url_for('browse_facets', short_key=category.key | replace('prop_', ''))}}">
-							{{category.human_name}}
-						</a></li>
-					{% endfor %}
-				</ul>
-			</li>
-			{% if 'username' in session %}
-			<li {% if active=='upload' %}class="active"{% endif %}>
-				<a href="{{url_for('upload_page')}}">Bilder hinzufügen</a>
-			</li>
-			{% endif %}
-			<form class="navbar-search pull-right" method="get" action="{{ url_for('quick_search') }}">
-				<input type="text" class="search-query" name="query" placeholder="Volltextsuche">
-			</form>
-		</ul>
-	</div>
-</nav>
+        <nav class="navbar navbar-default" role="navigation">
+            <div class="container-fluid">
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
+                    <ul class="nav navbar-nav">
+                        <li class="{% if active=='recent_images' %}active{% endif %}">
+                            <a href="{{url_for('recent_images')}}">Neue Bilder</a>
+                        </li>
+                        <li class="dropdown {% if active=='browse' %}active{% endif %}">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Registersuche <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                            {% for category in categories %}
+                                <li><a href="{{url_for('browse_facets', short_key=category.key | replace('prop_', ''))}}">
+                                    {{category.human_name}}
+                                </a></li>
+                            {% endfor %}
+                            </ul>
+                        </li>
+                        {% if 'username' in session %}
+                        <li {% if active=='upload' %}class="active"{% endif %}>
+                            <a href="{{url_for('upload_page')}}">Bilder hinzufügen</a>
+                        </li>
+                        {% endif %}
+
+                        <form class="navbar-form navbar-left" role="search" method="get" action="{{ url_for('quick_search') }}">
+                            <div class="form-group">
+                                <input name="query" type="text" class="form-control" placeholder="Volltextsuche">
+                            </div>
+                            <button type="submit" class="btn btn-default"><span
+                                    class="glyphicon glyphicon-search"></span></button>
+                        </form>
+                    </ul>
+                </div>
+            </div>
+        </nav>
 {{ caller() }}
 {% endmacro %}
 
@@ -161,27 +184,25 @@
 {{ caller() }}
 {% call pager('') %}{%endcall%}
 {% endmacro %}
-		<div class="container-fluid">
-			{% with messages = get_flashed_messages(with_categories=true) %}
-			{% if messages %}
-			
-			{% for category, message in messages %}
-			
-			<section id="flash{{loop.index-1}}" class="alert {{category}} hide">
-				<button type="button" class="close" data-dismiss="alert"> × </button>
-				{{message}}
-			</section>
-			{% endfor %}
-			{% endif %}
-			{% endwith %}
 
-			{% block body %}{% endblock %}
-		</div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+
+        {% for category, message in messages %}
+
+        <section id="flash{{loop.index-1}}" class="alert {{category}} hide">
+            <button type="button" class="close" data-dismiss="alert"> × </button>
+            {{message}}
+        </section>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% block body %}{% endblock %}
 		<footer>
 			<hr>
 			© CK 2012
 		</footer>
-		<script src="{{url_for('static', filename='vendor/bootstrap/js/bootstrap.min.js') }}"></script>
 		<script type="application/javascript">
 			$(function(){
 				$('.alert').slideDown('fast');
