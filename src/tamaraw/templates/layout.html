@@ -62,7 +62,7 @@
                     <ul class="nav navbar-nav navbar-right">
 					{% if 'username' in session %}
                         <li class="dropown">
-                            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-user" /></i>&nbsp;{{session['username']}}</a>
+                            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-user" /></span>&nbsp;{{session['username']}}</a>
                             <ul class="dropdown-menu">
                                 <li>
                                     <a href="{{url_for('comments')}}">Kommentare</a>
@@ -74,7 +74,7 @@
                             </ul>
                         </li>
 					{% else %}
-                    <li><button class="btn navbar-btn btn-sm" data-toggle="modal" data-target="#loginDialog">Login</button></li>
+                    <li><button id="loginButton" class="btn navbar-btn btn-sm" data-toggle="modal" data-target="#loginDialog">Login</button></li>
 					{% endif %}
                     </ul>
                 </div>
@@ -83,28 +83,30 @@
             <!-- /.container-fluid -->
         </nav>
 
-        <div id="loginDialog" class="modal small-modal hide fade container-fluid">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-                    &times;
-                </button>
-                <h3>Login</h3>
-            </div>
-            <form action="{{url_for('login')}}" method="post">
-                <div class="modal-body">
-                    <p>
-                        <input type="text" placeholder="Username" name="username"/>
-                    </p>
-                    <p>
-                        <input type="password" placeholder="Password" name="password"/>
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn pull-left" type="submit">
-                        Login
+        <div class="modal fade" id="loginDialog" tabindex="-1" role="dialog" aria-labelledby="loginButton" aria-hidden="true">
+            <div class="modal-dialog modal-sm modal-content">
+                <div class="modal-header">
+                    <button type="button" aria-label="close" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
                     </button>
+                    <h3>Login</h3>
                 </div>
-            </form>
+                <form action="{{url_for('login')}}" method="post">
+                    <div class="modal-body">
+                        <p>
+                            <input size="30" type="text" aria-label="username" placeholder="Username" name="username"/>
+                        </p>
+                        <p>
+                            <input size="30" type="password" aria-label="password" placeholder="Password" name="password"/>
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary pull-left" type="submit">
+                            Login
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
 
 {% macro db_navbar(active) %}
