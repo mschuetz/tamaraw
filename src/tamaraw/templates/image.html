@@ -49,12 +49,13 @@
 	</form>
 </div>
 
+<div class="container-fluid">
 <h3>{{image.prop_title}}</h3>
 {% if in_result_set %}
 <p>in {{ result_set_title }}</p>
 {% endif %}
 <div class="row">
-	<div class="span6">
+	<div class="col-md-6">
 		<dl class="dl-horizontal">
 			{% for prop in view_props %}
 			<dt>
@@ -100,7 +101,7 @@
 			<a href="#commentDialog" data-toggle="modal" class="btn"> Kommentieren </a>
 		</span>
 	</div>
-	<div class="span6">
+	<div class="col-md-6">
 		<div class="thumbnail">
 			<a title="Original" href="{{ url_for('get_image', store_key=image.store_key) }}"> <img src="{{ url_for('get_image', store_key=image.store_key, x=640, y=480) }}"/> </a>
 			<p>
@@ -108,6 +109,7 @@
 			</p>
 		</div>
 	</div>
+</div>
 </div>
 {% if in_result_set %}
 {% call pager('') %}{%endcall%}
