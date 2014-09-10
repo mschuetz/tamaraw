@@ -8,9 +8,12 @@ function add_list_element(target, prop_key, placeholder, next_index) {
 	if (_next_index[target] == null)
 		_next_index[target] = next_index;
 	var id = '' + prop_key + _next_index[target];
-	$(target).append('<li class="hide" id="li_' + id +'">'
-		+ '<input type="text" name="' + id + '" id="' + id + '" placeholder="' + placeholder + '" value="">'
-		+ '&nbsp;<a href="#" class="btn btn-small" onclick="remove_list_element(\'#li_' + id + '\')">-</a></li>');
+	$(target).append('<li class="hide" id="li_' + id +'"> \
+        <div class="input-group"> \
+            <input class="form-control" type="text" name="' + id + '" id="' + id + '" placeholder="' + placeholder + '" value=""> \
+            <span class="input-group-btn"><a href="#" class="btn btn-default btn-md" onclick="remove_list_element(\'#li_' + id + '\')"><span class="glyphicon glyphicon-remove"></span></a></span> \
+        </div> \
+    </li>');
 	$('#li_' + id).slideDown('fast').removeClass('hide');
 	_next_index[target]++;
 }
@@ -23,33 +26,39 @@ function remove_list_element(target) {
 }
 </script>
 
+<div class="container-fluid">
 <div class="row">
-<form class="form-horizontal span6" method="post"  action="{{url_for('save_image', store_key=store_key)}}">
+<div class="col-md-6">
+<form class="form-horizontal" role="form" method="post" action="{{url_for('save_image', store_key=store_key)}}">
 	{% for prop in view_props %}
-	<div class="control-group">
-		<label class="control-label" for="{{prop.key}}">{{prop.human_name}}</label>
+	<div class="form-group">
+		<label class="col-md-4 control-label" for="{{prop.key}}">{{prop.human_name}}</label>
 		<div class="controls" id="{{prop.key}}">
-			{% if prop.type=='array' %}
+            <div class="col-md-8">
+            {% if prop.type=='array' %}
 				<ul id="{{prop.key}}_list" class="property_list">
 				{% for item in prop.value %}
 				<li id="li_{{prop.key}}{{loop.index-1}}">
-					<input class="span4" type="text" name="{{prop.key}}{{loop.index-1}}" id="{{prop.key}}{{loop.index-1}}" placeholder="{{prop.placeholder}}" value="{{item}}">
-					<a href="#" class="btn btn-small" onclick="remove_list_element('#li_{{prop.key}}{{loop.index-1}}')">-</a>
-				</li>	
+                    <div class="input-group">
+                        <input class="form-control" type="text" name="{{prop.key}}{{loop.index-1}}" id="{{prop.key}}{{loop.index-1}}" placeholder="{{prop.placeholder}}" value="{{item}}">
+                        <span class="input-group-btn"><a href="#" class="btn btn-default btn-md" onclick="remove_list_element('#li_{{prop.key}}{{loop.index-1}}')"><span class="glyphicon glyphicon-remove"></span></a></span>
+                    </div>
+				</li>
 				{% endfor %}
 				</ul>
-				<a href="#" class="btn btn-small" onclick="add_list_element('#{{prop.key}}_list', '{{prop.key}}', '{{prop.placeholder}}', {{prop.value|count}});">+</a>
+				<a href="#" class="btn btn-xs btn-default" onclick="add_list_element('#{{prop.key}}_list', '{{prop.key}}', '{{prop.placeholder}}', {{prop.value|count}});"><span class="glyphicon glyphicon-plus"></span></a>
 			{% elif prop.type=='text' %}
-				<textarea class="span4" rows="6" name="{{prop.key}}" id="{{prop.key}}" placeholder="{{prop.placeholder}}">{{prop.value}}</textarea>
+				<textarea class="form-control" rows="6" name="{{prop.key}}" id="{{prop.key}}" placeholder="{{prop.placeholder}}">{{prop.value}}</textarea>
 			{% else %}
-				<input class="span4" type="text" name="{{prop.key}}" id="{{prop.key}}" placeholder="{{prop.placeholder}}" value="{{prop.value}}">
+				<input  class="form-control" type="text" name="{{prop.key}}" id="{{prop.key}}" placeholder="{{prop.placeholder}}" value="{{prop.value}}">
 			{% endif %}
+            </div>
 		</div>
 	</div>
 	{% endfor %}
 	<div class="control-group">
 		<div class="form-actions">
-			<a href="{{ url_for('image_page', store_key=store_key) }}" class="btn">
+			<a href="{{ url_for('image_page', store_key=store_key) }}" class="btn btn-default">
 				Zurück
 			</a>
 			<button type="submit" class="btn btn-primary">
@@ -58,10 +67,11 @@ function remove_list_element(target) {
 		</div>
 	</div>
 </form>
-
-<div class="thumbnail span6">
-	<img src="{{ url_for('get_image', store_key=store_key, x=640, y=480) }}"/>
 </div>
 
+<div class="thumbnail col-md-6">
+	<img src="{{ url_for('get_image', store_key=store_key, x=640, y=480) }}"/>
+</div>
+</div>
 </div>
 {% endblock %}
