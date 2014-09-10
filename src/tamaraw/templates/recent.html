@@ -2,7 +2,7 @@
 {% block body %}
 {% call db_navbar('recent_images') %}{%endcall%}
 
-<div>
+<div class="container-fluid">
 	{% call image_list(images, 'recent_images', prev_offset, next_offset) %}{%endcall%}
 </div>
 {% endblock %}

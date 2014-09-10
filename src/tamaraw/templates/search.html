@@ -3,9 +3,8 @@
 
 {% call db_navbar('search') %}{%endcall%}
 
-<h3>{{search_title}}</h3>
-
-<div>
+<div class="container-fluid">
+    <h3>{{search_title}}</h3>
 	{% call image_list(images, 'search', prev_offset, next_offset) %}{%endcall%}
 </div>
 {% endblock %}

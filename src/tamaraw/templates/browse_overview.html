@@ -2,7 +2,7 @@
 {% block body %}
 
 {% call db_navbar('browse') %}{%endcall%}
-<section>
+<section class="container-fluid">
 	<h3>Register: {{current_category.human_name}}</h3>
 	<ul>
 	{% for facet in facets %}
