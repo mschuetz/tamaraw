@@ -2,7 +2,8 @@
 {% block body %}
 {% call db_navbar('') %}{%endcall%}
 
-<div id="deleteDialog" class="modal hide fade">
+<div class="modal fade" id="deleteDialog" tabindex="-1" role="dialog" aria-labelledby="deletBtn" aria-hidden="true">
+    <div class="modal-dialog modal-content">
 	<div class="modal-header">
 		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
 			&times;
@@ -10,18 +11,20 @@
 		<h3>Wirklich löschen?</h3>
 	</div>
 	<div class="modal-footer">
-		<button class="btn" data-dismiss="modal" aria-hidden="true">
-			Zurück
-		</button>
 		<form method="post" action="{{url_for('delete_image', store_key=image.store_key)}}" class="span1">
+            <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">
+                Zurück
+            </button>
 			<button class="btn btn-danger" type="submit">
 				Löschen
 			</button>
 		</form>
 	</div>
 </div>
+</div>
 
-<div id="commentDialog" class="modal hide fade">
+<div class="modal fade" id="commentDialog" tabindex="-1" role="dialog" aria-labelledby="commentBtn" aria-hidden="true">
+    <div class="modal-dialog modal-content">
 	<div class="modal-header">
 		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
 			&times;
@@ -47,6 +50,7 @@
 			</button>
 		</div>
 	</form>
+</div>
 </div>
 
 <div class="container-fluid">
@@ -94,11 +98,11 @@
 				in: Bilderarchiv Rinderanspannung &lt;{{request.base_url}}&gt; (Stand: {{(image.updated_at or image.created_at) | date_format}})</dd>
 		</dl>
 		{% if 'username' in session %}
-			<a href="{{url_for('edit_image', store_key=image.store_key)}}" class="btn btn-primary span1"> Edit </a>
-			<a href="#deleteDialog" data-toggle="modal" class="span1 btn btn-danger"> Delete </a>
+			<a id="editBtn" href="{{url_for('edit_image', store_key=image.store_key)}}" class="btn btn-primary span1"> Edit </a>
+			<a id="deleteBtn" href="#deleteDialog" data-toggle="modal" class="span1 btn btn-danger"> Delete </a>
 		{% endif %}
-		<span class="span1">
-			<a href="#commentDialog" data-toggle="modal" class="btn"> Kommentieren </a>
+		<span id="commentBtn" class="span1">
+			<a href="#commentDialog" data-toggle="modal" class="btn btn-default"> Kommentieren </a>
 		</span>
 	</div>
 	<div class="col-md-6">
