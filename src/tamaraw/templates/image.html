@@ -3,7 +3,7 @@
 {% call db_navbar('') %}{%endcall%}
 
 <div class="modal fade" id="deleteDialog" tabindex="-1" role="dialog" aria-labelledby="deletBtn" aria-hidden="true">
-    <div class="modal-dialog modal-content">
+    <div class="modal-dialog modal-sm modal-content container-fluid">
 	<div class="modal-header">
 		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
 			&times;
@@ -24,22 +24,26 @@
 </div>
 
 <div class="modal fade" id="commentDialog" tabindex="-1" role="dialog" aria-labelledby="commentBtn" aria-hidden="true">
-    <div class="modal-dialog modal-content">
+    <div class="modal-dialog modal-md modal-content container-fluid">
 	<div class="modal-header">
 		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
 			&times;
 		</button>
 		<h3>Kommentar an den Autor</h3>
+        Hinweis: Ihr Kommentar wird nicht öffentlich angezeigt und ist nur dem Autor zugänglich.
 	</div>
-	<form method="post" action="{{url_for('comment', store_key=image.store_key)}}">
+	<form class="form-horizontal" method="post" action="{{url_for('comment', store_key=image.store_key)}}">
 		<div class="modal-body">
-			<p>Hinweis: Ihr Kommentar wird nicht öffentlich angezeigt und ist nur dem Autor zugänglich.</p>
-			<p>
-				<input class="span6" type="text" name="real_name" placeholder="Name" value=""/>
-				<input class="span6 hide" type="text" name="name" placeholder="Name" value=""/>
-			</p>
-			<p><input class="span6" type="email" name="email" placeholder="Emailadresse" value=""></p>
-			<p><textarea class="span6" name="text" placeholder="Kommentar" rows="10" cols="80"></textarea></p>
+			<div class="form-group">
+				<input class="form-control" type="text" name="real_name" placeholder="Name" value=""/>
+				<input class="hide" type="text" name="name" placeholder="Name" value=""/>
+			</div>
+			<div class="form-group">
+                <input class="form-control" type="email" name="email" placeholder="Emailadresse" value="">
+            </div>
+			<div class="form-group">
+                <textarea class="form-control" name="text" placeholder="Kommentar" rows="10" cols="80"></textarea>
+            </div>
 		</div>
 		<div class="modal-footer">
 			<a class="btn" data-dismiss="modal" aria-hidden="true">
