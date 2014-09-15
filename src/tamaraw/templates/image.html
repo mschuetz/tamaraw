@@ -77,7 +77,7 @@
 							{{item | markdown}}
 							{% if item and prop.use_for_browse %}
 							<a href="{{url_for('browse', short_key=prop.key | replace('prop_', ''), value=item)}}">
-								<i class="icon-search icon-gray"></i>
+								<span class="glyphicon glyphicon-search"></span>
 							</a>
 							{% endif %}
 						</li>
@@ -91,7 +91,7 @@
 					{% endif %}
 					{% if prop.value and prop.use_for_browse %}
 					<a href="{{url_for('browse', short_key=prop.key | replace('prop_', ''), value=prop.value)}}">
-						<i class="icon-search icon-gray "></i>
+						<span class="glyphicon glyphicon-search"></span>
 					</a>
 					{% endif %}
 				{% endif %}
