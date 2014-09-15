@@ -16,38 +16,43 @@ $(function() {
 	});
 });
 </script>
-<div class="span12">
-	<h1>Kommentare</h1>
-	<div class="span10 accordion" id="accordion">
-		{% for comment in comments %}
-		<div class="accordion-group">
-			<div class="accordion-heading">
-				{% if comment.read %}
-					<span class="label label-success" id="read_{{comment._id}}">Gelesen</span>
-				{% else %}
-					<span class="label label-important" id="read_{{comment._id}}">Ungelesen</span>
-				{% endif %}
-				{{comment.created_at | date_format('%d.%m.%Y %H:%M')}} {{comment.name}} &lt;{{comment.email}}&gt; (betrifft 
-				{% if comment.store_key == 'subscribe' %}
-					Emailverteiler
-				{% else %}
-					<a href="{{url_for('image_page', store_key=comment.store_key)}}">Bild {{comment.store_key}}</a>
-				{% endif %}
-				)
-				<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapse_{{comment._id}}">
-					<i class="icon icon-plus"></i>
-				</a>
-			</div>
-			<div id="collapse_{{comment._id}}" class="accordion-body collapse">
-				<div class="accordion-inner">
-					{{comment.text}}
-				</div>
-			</div>
-		</div>
-
-		{% endfor %}
-	</div>
-	{% call pager('span10') %}{%endcall%}
+<div class="container-fluid">
+    <div class="row">
+        <h1>Kommentare</h1>
+        <div class="col-md-12">
+            <div class="panel-group" id="accordion">
+                {% for comment in comments %}
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <span class="panel-title">
+                            {% if comment.read %}
+                                <span class="label label-success" id="read_{{comment._id}}">Gelesen</span>
+                            {% else %}
+                                <span class="label label-important" id="read_{{comment._id}}">Ungelesen</span>
+                            {% endif %}
+                            {{comment.created_at | date_format('%d.%m.%Y %H:%M')}} {{comment.name}} &lt;{{comment.email}}&gt; (betrifft
+                            {% if comment.store_key == 'subscribe' %}
+                                Emailverteiler
+                            {% else %}
+                                <a href="{{url_for('image_page', store_key=comment.store_key)}}">Bild {{comment.store_key}}</a>
+                            {% endif %}
+                            )
+                            <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapse_{{comment._id}}">
+                                <span class="pull-right glyphicon glyphicon-plus"></span>
+                            </a>
+                        </span>
+                    </div>
+                    <div id="collapse_{{comment._id}}" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            {{comment.text}}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        </div>
+        {% call pager('span10') %}{%endcall%}
+    </div>
 </div>
 
 {% endblock %}
