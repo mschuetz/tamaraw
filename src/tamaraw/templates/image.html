@@ -111,7 +111,7 @@
 	</div>
 	<div class="col-md-6">
 		<div class="thumbnail">
-			<a title="Original" href="{{ url_for('get_image', store_key=image.store_key) }}"> <img src="{{ url_for('get_image', store_key=image.store_key, x=640, y=480) }}"/> </a>
+			<a title="Original" href="{{ url_for('get_image', store_key=image.store_key) }}"> <img class="main-image" src="{{ url_for('get_image', store_key=image.store_key, x=640, y=480) }}"/> </a>
 			<p>
 				hinzugefügt am {{ image.created_at | date_format }}
 			</p>
@@ -122,4 +122,7 @@
 {% if in_result_set %}
 {% call pager('') %}{%endcall%}
 {% endif %}
+<script type="application/javascript">
+    $(function(){Tamaraw.resize_images('.main-image', 4/3, 0.4);});
+</script>
 {% endblock %}
