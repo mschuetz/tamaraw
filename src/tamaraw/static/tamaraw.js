@@ -38,7 +38,10 @@ resize_images: function(selector, aspect_ratio, width_real_estate) {
         var new_height = Math.ceil(new_width / aspect_ratio);
 
         $(selector).each(function(_, img) {
-            img.src = img.src.replace(/_\d+x\d+$/, '_' + new_width + 'x' + new_height)
+            var new_src = img.src.replace(/_\d+x\d+$/, '_' + new_width + 'x' + new_height)
+            if (new_src != img.src) {
+                img.src = new_src
+            }
         });
     }
     $(window).resize(do_resize);
