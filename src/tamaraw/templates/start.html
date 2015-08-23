@@ -1,4 +1,10 @@
 {% extends "layout.html" %}
+{% block head %}
+{% for image in demo_images %}
+    <link rel="prefetch" href="{{ url_for('get_image', store_key=image.store_key, x=640, y=480) }}" />
+{% endfor %}
+{% endblock %}
+
 {% block body %}
 
 <div class="modal fade" id="subscribeDialog" tabindex="-1" role="dialog" aria-labelledby="subscribeBtn" aria-hidden="true">
