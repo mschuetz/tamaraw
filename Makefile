@@ -12,7 +12,5 @@ combine:
 	cat src/tamaraw/static/vendor/underscore-min.js >> src/tamaraw/static/jscss/all.js
 	echo >> src/tamaraw/static/jscss/all.js
 	cat src/tamaraw/static/vendor/bootstrap3/js/bootstrap.min.js >> src/tamaraw/static/jscss/all.js
-	echo >> src/tamaraw/static/jscss/all.js
-	cat src/tamaraw/static/tamaraw.js >> src/tamaraw/static/jscss/all.js
 	mkdir -p src/tamaraw/static/fonts
 	cp src/tamaraw/static/vendor/bootstrap3/fonts/glyphicons-halflings-regular.woff src/tamaraw/static/fonts
