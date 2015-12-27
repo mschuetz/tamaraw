@@ -70,7 +70,8 @@ function remove_list_element(target) {
 </div>
 
 <div class="thumbnail col-md-6">
-	<img src="{{ url_for('get_image', store_key=store_key, x=640, y=480) }}"/>
+	<img src="{{ url_for('get_image', store_key=store_key, x=640, y=480) }}"
+		 srcset="{{ url_for('get_image', store_key=store_key, x=1280, y=960) }} 2x"/>
 </div>
 </div>
 </div>

@@ -69,7 +69,9 @@
                         <div class="carousel-inner">
                             {% for image in demo_images %}
                             <div class="item {%if loop.first%} active {%endif%}">
-                                <img id="carousel-img-{{loop.index0}}" class="carousel-image" src="{{ url_for('get_image', store_key=image.store_key, x=640, y=480) }}" alt="">
+                                <img id="carousel-img-{{loop.index0}}" class="carousel-image"
+                                     src="{{ url_for('get_image', store_key=image.store_key, x=640, y=480) }}"
+                                     srcset="{{ url_for('get_image', store_key=image.store_key, x=1280, y=960) }} 2x">
                                 <div class="carousel-caption">
                                     <h5><a class="regular-text" href="{{url_for('image_page', store_key=image.store_key)}}">{{image.prop_title}}</a></h5>
                                     <p><small style="font-size: 50%">Bildrechte: {{image.prop_rights}}</small></p>
