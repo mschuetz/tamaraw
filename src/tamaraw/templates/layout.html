@@ -171,7 +171,7 @@
     <div class="col-md-3">
         <a class="thumbnail" href="{{ url_for('image_page', store_key=image.store_key, r=query_name, o=offset + loop.index0 + outer_index * 4) }}">
                 <img class="img-rounded overview-image" src="{{ url_for('get_image', store_key=image.store_key, x=400, y=300) }}"
-                    srcset="{{ url_for('get_image', store_key=image.store_key, x=320, y=240) }} 1300w, {{ url_for('get_image', store_key=image.store_key, x=640, y=480) }} 2x"/>
+                    srcset="{{ url_for('get_image', store_key=image.store_key, x=320, y=240) }} 1300w 1x, {{ url_for('get_image', store_key=image.store_key, x=640, y=480) }} 2x"/>
                 <div class="caption">{{ image.prop_title }}</div>
         </a>
     </div>
