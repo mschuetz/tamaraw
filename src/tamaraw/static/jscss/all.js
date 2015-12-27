@@ -20,6 +20,7 @@ var Tamaraw = {
  * assumes the image src uri ends with "_WIDTHxHEIGHT".
  */
 resize_images: function(selector, aspect_ratio, width_real_estate) {
+    return;
     function parse_dimensions(img_source) {
         var matches = img_source.match(/_(\d+)x(\d+)$/)
         if (matches == null) {
